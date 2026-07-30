@@ -1,14 +1,17 @@
 package com.ips.gestion_academica.service;
 
-import com.ips.gestion_academica.exception.UsuarioDuplicadoException;
-import com.ips.gestion_academica.exception.UsuarioNoEncontradoException;
+import com.ips.gestion_academica.dto.usuario.UsuarioRequest;
+import com.ips.gestion_academica.dto.usuario.UsuarioResponse;
+import com.ips.gestion_academica.exception.RecursoDuplicadoException;
+import com.ips.gestion_academica.exception.RecursoNoEncontradoException;
 import com.ips.gestion_academica.exception.UsuarioInactivoException;
 import com.ips.gestion_academica.model.Usuario;
 import com.ips.gestion_academica.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
+
+
 
 @Service
 public class UsuarioService {
@@ -19,62 +22,93 @@ public class UsuarioService {
         this.usuarioRepository = usuarioRepository;
     }
 
-    public List<Usuario> listarUsuarios() {
-        return usuarioRepository.findByActivoTrue();
+    private UsuarioResponse convertirAResponse(Usuario usuario) {
+        return new UsuarioResponse(
+                usuario.getId(),
+                usuario.getNombre(),
+                usuario.getApellido(),
+                usuario.getLegajo(),
+                usuario.getEmail(),
+                usuario.getActivo(),
+                usuario.getRol()
+        );
     }
 
-    public Usuario buscarPorId(Long id) {
+    public List<UsuarioResponse> listarUsuarios() {
+        return usuarioRepository.findByActivoTrue()
+                .stream()
+                .map(this::convertirAResponse)
+                .toList();
+    }
+
+    public UsuarioResponse buscarPorId(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
-            .orElseThrow(() -> new UsuarioNoEncontradoException(id));
+            .orElseThrow(() -> new RecursoNoEncontradoException(id));
 
         if (!usuario.getActivo()) {
             throw new UsuarioInactivoException(id);
         }
 
-        return usuario;
+        return convertirAResponse(usuario);
     }
 
-    public Usuario crearUsuario(Usuario usuario) {
+
+    public UsuarioResponse crearUsuario(UsuarioRequest request) {
+        Usuario usuario = new Usuario();
+        usuario.setNombre(request.getNombre());
+        usuario.setApellido(request.getApellido());
+        usuario.setDni(request.getDni());
+        usuario.setEmail(request.getEmail());
+        usuario.setPassword(request.getPassword());
+        usuario.setLegajo(request.getLegajo());
+        usuario.setRol(request.getRol());
+
+        usuario.setActivo(true);
+
         if(usuarioRepository.existsByEmail(usuario.getEmail())){
-            throw new UsuarioDuplicadoException(
+            throw new RecursoDuplicadoException(
                 "Ya existe un usuario con ese email " + usuario.getEmail()
             );
         }
 
         if(usuarioRepository.existsByDni(usuario.getDni())){
-            throw new UsuarioDuplicadoException(
+            throw new RecursoDuplicadoException(
                 "Ya existe un usuario con ese dni " + usuario.getDni()
             );
         }
 
         if(usuarioRepository.existsByLegajo(usuario.getLegajo())){
-            throw new UsuarioDuplicadoException(
+            throw new RecursoDuplicadoException(
                 "Ya existe un usuario con ese legajo " + usuario.getLegajo()
             );
         }
-
-        return usuarioRepository.save(usuario);
+        Usuario usuario_creado = usuarioRepository.save(usuario);
+        return convertirAResponse(usuario_creado);
     }
 
-    public Usuario modificarUsuario(Long id, Usuario usuarioModificado) {
+    public UsuarioResponse modificarUsuario(Long id, UsuarioRequest usuarioModificado) {
         Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new UsuarioNoEncontradoException(id));
+                .orElseThrow(() -> new RecursoNoEncontradoException(id));
 
         if(usuarioRepository.existsByEmailAndIdNot(usuarioModificado.getEmail(),id)){
-            throw new UsuarioDuplicadoException(
+            throw new RecursoDuplicadoException(
                 "Ya existe un usuario con ese email " + usuarioModificado.getEmail()
             );
         }
         if(usuarioRepository.existsByDniAndIdNot(usuarioModificado.getDni(),id)){
-            throw new UsuarioDuplicadoException(
+            throw new RecursoDuplicadoException(
                 "Ya existe un usuario con ese DNI " + usuarioModificado.getDni()
             );
         }
 
         if(usuarioRepository.existsByLegajoAndIdNot(usuarioModificado.getLegajo(),id)){
-            throw new UsuarioDuplicadoException(
+            throw new RecursoDuplicadoException(
                 "Ya existe un usuario con ese Legajo " + usuarioModificado.getLegajo()
             );
+        }
+
+        if (!usuario.getActivo()) {
+            throw new UsuarioInactivoException(id);
         }
 
         usuario.setNombre(usuarioModificado.getNombre());
@@ -84,12 +118,14 @@ public class UsuarioService {
         usuario.setLegajo(usuarioModificado.getLegajo());
         usuario.setRol(usuarioModificado.getRol());
 
-        return usuarioRepository.save(usuario);
+        Usuario usuarioGuardado = usuarioRepository.save(usuario);
+
+        return convertirAResponse(usuarioGuardado);
     }
 
     public void darDeBaja(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new UsuarioNoEncontradoException(id));
+                .orElseThrow(() -> new RecursoNoEncontradoException(id));
 
 
         if (!usuario.getActivo()) {

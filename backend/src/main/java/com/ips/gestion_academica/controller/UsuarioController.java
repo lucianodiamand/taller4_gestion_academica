@@ -1,5 +1,7 @@
 package com.ips.gestion_academica.controller;
 
+import com.ips.gestion_academica.dto.usuario.UsuarioRequest;
+import com.ips.gestion_academica.dto.usuario.UsuarioResponse;
 import com.ips.gestion_academica.model.Usuario;
 import com.ips.gestion_academica.service.UsuarioService;
 import org.springframework.http.ResponseEntity;
@@ -18,26 +20,26 @@ public class UsuarioController {
     }
 
     @GetMapping
-    public List<Usuario> listarUsuarios() {
+    public List<UsuarioResponse> listarUsuarios() {
         return usuarioService.listarUsuarios();
     }
 
     @GetMapping("/{id}")
-        public ResponseEntity<Usuario> buscarPorId(@PathVariable Long id) {
+        public ResponseEntity<UsuarioResponse> buscarPorId(@PathVariable Long id) {
             return ResponseEntity.ok(usuarioService.buscarPorId(id));
     }
     @PostMapping
-    public ResponseEntity<Usuario> crearUsuario(@RequestBody Usuario usuario) {
-        Usuario usuarioCreado = usuarioService.crearUsuario(usuario);
+    public ResponseEntity<UsuarioResponse> crearUsuario(@RequestBody UsuarioRequest usuario) {
+        UsuarioResponse usuarioCreado = usuarioService.crearUsuario(usuario);
         return ResponseEntity.ok(usuarioCreado);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Usuario> modificarUsuario(
+    public ResponseEntity<UsuarioResponse> modificarUsuario(
             @PathVariable Long id,
-            @RequestBody Usuario usuario) {
+            @RequestBody UsuarioRequest usuario) {
 
-        Usuario usuarioModificado =
+        UsuarioResponse usuarioModificado =
                 usuarioService.modificarUsuario(id, usuario);
 
         return ResponseEntity.ok(usuarioModificado);

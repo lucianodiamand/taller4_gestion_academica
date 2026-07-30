@@ -8,18 +8,18 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(UsuarioNoEncontradoException.class)
+    @ExceptionHandler(RecursoNoEncontradoException.class)
     public ResponseEntity<String> manejarUsuarioNoEncontrado(
-            UsuarioNoEncontradoException ex) {
+            RecursoNoEncontradoException ex) {
 
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(ex.getMessage());
     }
 
-    @ExceptionHandler(UsuarioDuplicadoException.class)
+    @ExceptionHandler(RecursoDuplicadoException.class)
     public ResponseEntity<String> mensajeUsuarioDuplicado(
-            UsuarioDuplicadoException ex){
+            RecursoDuplicadoException ex){
 
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
