@@ -1,8 +1,8 @@
 package com.ips.gestion_academica.exception;
 
-public class UsuarioDuplicadoException extends RuntimeException {
+public class RecursoDuplicadoException extends RuntimeException {
 
-    public UsuarioDuplicadoException(String mensaje){
+    public RecursoDuplicadoException(String mensaje){
         super(mensaje);
     }
     
