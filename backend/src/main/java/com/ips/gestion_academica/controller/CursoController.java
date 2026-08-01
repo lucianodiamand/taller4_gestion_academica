@@ -1,52 +1,52 @@
 package com.ips.gestion_academica.controller;
 
-import com.ips.gestion_academica.dto.usuario.UsuarioRequest;
-import com.ips.gestion_academica.dto.usuario.UsuarioResponse;
-import com.ips.gestion_academica.service.UsuarioService;
+import com.ips.gestion_academica.dto.curso.CursoRequest;
+import com.ips.gestion_academica.dto.curso.CursoResponse;
+import com.ips.gestion_academica.service.CursoService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/usuarios")
-public class UsuarioController {
+@RequestMapping("/api/cursos")
+public class CursoController {
 
-    private final UsuarioService usuarioService;
+    private final CursoService cursoService;
 
-    public UsuarioController(UsuarioService usuarioService) {
-        this.usuarioService = usuarioService;
+    public CursoController(CursoService cursoService) {
+        this.cursoService = cursoService;
     }
 
     @GetMapping
-    public List<UsuarioResponse> listarUsuarios() {
-        return usuarioService.listarUsuarios();
+    public List<CursoResponse> listarCursos() {
+        return cursoService.listarCursos();
     }
 
     @GetMapping("/{id}")
-        public ResponseEntity<UsuarioResponse> buscarPorId(@PathVariable Long id) {
-            return ResponseEntity.ok(usuarioService.buscarPorId(id));
+        public ResponseEntity<CursoResponse> buscarPorId(@PathVariable Long id) {
+            return ResponseEntity.ok(cursoService.buscarPorId(id));
     }
     @PostMapping
-    public ResponseEntity<UsuarioResponse> crearUsuario(@RequestBody UsuarioRequest usuario) {
-        UsuarioResponse usuarioCreado = usuarioService.crearUsuario(usuario);
-        return ResponseEntity.ok(usuarioCreado);
+    public ResponseEntity<CursoResponse> crearCurso(@RequestBody CursoRequest curso) {
+        CursoResponse cursoCreado = cursoService.crearCurso(curso);
+        return ResponseEntity.ok(cursoCreado);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UsuarioResponse> modificarUsuario(
+    public ResponseEntity<CursoResponse> modificarCurso(
             @PathVariable Long id,
-            @RequestBody UsuarioRequest usuario) {
+            @RequestBody CursoRequest curso) {
 
-        UsuarioResponse usuarioModificado =
-                usuarioService.modificarUsuario(id, usuario);
+        CursoResponse cursoModificado =
+                cursoService.modificarCurso(id, curso);
 
-        return ResponseEntity.ok(usuarioModificado);
+        return ResponseEntity.ok(cursoModificado);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> darDeBaja(@PathVariable Long id) {
-        usuarioService.darDeBaja(id);
+        cursoService.darDeBaja(id);
         return ResponseEntity.noContent().build();
     }
 }

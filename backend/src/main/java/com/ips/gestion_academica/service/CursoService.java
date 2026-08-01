@@ -7,8 +7,10 @@ import com.ips.gestion_academica.exception.RecursoDuplicadoException;
 import com.ips.gestion_academica.exception.RecursoNoEncontradoException;
 import com.ips.gestion_academica.exception.RecursoInactivoException;
 import com.ips.gestion_academica.model.Curso;
+import com.ips.gestion_academica.model.Rol;
 import com.ips.gestion_academica.model.Usuario;
 import com.ips.gestion_academica.repository.CursoRepository;
+import com.ips.gestion_academica.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,10 +20,15 @@ import java.util.List;
 @Service
 public class CursoService {
 
+    private final UsuarioRepository usuarioRepository;
     private final CursoRepository cursoRepository;
 
-    public CursoService(CursoRepository cursoRepository) {
+    public CursoService(
+        CursoRepository cursoRepository, 
+        UsuarioRepository usuarioRepository){
         this.cursoRepository = cursoRepository;
+        this.usuarioRepository = usuarioRepository;
+
     }
 
     private UsuarioResumeResponse convertirAResume(Usuario usuario) {
@@ -66,34 +73,42 @@ public class CursoService {
 
 
     public CursoResponse crearCurso(CursoRequest request) {
+        Usuario profesor = usuarioRepository.findById(request.getProfesorId())
+        .orElseThrow(() ->
+                new RecursoNoEncontradoException("Usuario Profesor", request.getProfesorId())
+        );
+
+        if (!profesor.getActivo()) {
+            throw new RecursoInactivoException(
+                    "El profesor con ID ",profesor.getId());
+        }
+
+        if (profesor.getRol() != Rol.PROFESOR) {
+           throw new IllegalArgumentException(
+                "El usuario seleccionado no tiene rol de profesor"
+            );
+        }
+
         Curso curso = new Curso();
-        curso.setNombre(request.getNombre());
-        curso.setApellido(request.getApellido());
-        curso.setDni(request.getDni());
-        curso.setEmail(request.getEmail());
-        curso.setPassword(request.getPassword());
-        curso.setLegajo(request.getLegajo());
-        curso.setRol(request.getRol());
+        curso.setAnio(request.getAnio());
+        curso.setCuatrimestre(request.getCuatrimestre());
+        curso.setComision(request.getComision());
+        curso.setProfesor(profesor);
+        //curso.setMateria(request.getMateria());
 
         curso.setActivo(true);
 
-        if(cursoRepository.existsByEmail(curso.getEmail())){
+        if(cursoRepository.existsByAnioAndCuatrimestreAndComision(
+            request.getAnio(),
+            request.getCuatrimestre(),
+            request.getComision()
+            //request.geMateria(),
+        )){
             throw new RecursoDuplicadoException(
-                "Ya existe un curso con ese email " + curso.getEmail()
+                "Ya existe una Materia con ese anio " + curso.getAnio() + " cuatrimestre " + curso.getCuatrimestre() + " comision " + curso.getComision() 
             );
         }
 
-        if(cursoRepository.existsByDni(curso.getDni())){
-            throw new RecursoDuplicadoException(
-                "Ya existe un curso con ese dni " + curso.getDni()
-            );
-        }
-
-        if(cursoRepository.existsByLegajo(curso.getLegajo())){
-            throw new RecursoDuplicadoException(
-                "Ya existe un curso con ese legajo " + curso.getLegajo()
-            );
-        }
         Curso curso_creado = cursoRepository.save(curso);
         return convertirAResponse(curso_creado);
     }
@@ -102,33 +117,39 @@ public class CursoService {
         Curso curso = cursoRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Curso",id));
 
-        if(cursoRepository.existsByEmailAndIdNot(cursoModificado.getEmail(),id)){
+        if(cursoRepository.existsByAnioAndCuatrimestreAndComision(
+            cursoModificado.getAnio(),
+            cursoModificado.getCuatrimestre(),
+            cursoModificado.getComision()
+            //request.geMateria(),
+        )){
             throw new RecursoDuplicadoException(
-                "Ya existe un curso con ese email " + cursoModificado.getEmail()
+                "Ya existe una Materia con ese anio " + curso.getAnio() + " cuatrimestre " + curso.getCuatrimestre() + " comision " + curso.getComision() 
             );
         }
-        if(cursoRepository.existsByDniAndIdNot(cursoModificado.getDni(),id)){
-            throw new RecursoDuplicadoException(
-                "Ya existe un curso con ese DNI " + cursoModificado.getDni()
-            );
-        }
-
-        if(cursoRepository.existsByLegajoAndIdNot(cursoModificado.getLegajo(),id)){
-            throw new RecursoDuplicadoException(
-                "Ya existe un curso con ese Legajo " + cursoModificado.getLegajo()
-            );
-        }
-
         if (!curso.getActivo()) {
-            throw new CursoInactivoException(id);
+            throw new RecursoInactivoException("Curso",id);
         }
 
-        curso.setNombre(cursoModificado.getNombre());
-        curso.setApellido(cursoModificado.getApellido());
-        curso.setDni(cursoModificado.getDni());
-        curso.setEmail(cursoModificado.getEmail());
-        curso.setLegajo(cursoModificado.getLegajo());
-        curso.setRol(cursoModificado.getRol());
+        Usuario profesor = usuarioRepository.findById(cursoModificado.getProfesorId())
+        .orElseThrow(() ->
+                new RecursoNoEncontradoException("Usuario Profesor", cursoModificado.getProfesorId())
+        );
+
+        if (!profesor.getActivo()) {
+            throw new RecursoInactivoException(
+                    "El profesor con ID ",profesor.getId());
+        }
+
+        if (profesor.getRol() != Rol.PROFESOR) {
+           throw new IllegalArgumentException(
+                "El usuario seleccionado no tiene rol de profesor"
+            );
+        }
+        curso.setAnio(cursoModificado.getAnio());
+        curso.setCuatrimestre(cursoModificado.getCuatrimestre());
+        curso.setComision(cursoModificado.getComision());
+        curso.setProfesor(profesor);
 
         Curso cursoGuardado = cursoRepository.save(curso);
 
