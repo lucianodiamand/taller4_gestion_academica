@@ -6,8 +6,7 @@ public class CursoRequest {
     private Integer cuatrimestre;
     private String comision;
     private Long profesorId;
-    // próximamente
-    // private Long materiaId;
+    private Long materiaId;
     
     public CursoRequest() {
     }
@@ -40,7 +39,15 @@ public class CursoRequest {
         return profesorId;
     }
 
+    public Long getMateriaId(){
+        return materiaId;
+    }
+
     public void setProfesorId(Long profesorId) {
         this.profesorId = profesorId;
+    }
+
+    public void setMateriaId(Long materiaId){
+        this.materiaId =materiaId;
     }
 }

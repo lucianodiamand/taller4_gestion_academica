@@ -23,10 +23,9 @@ public class Curso {
     private String comision;
 
 
-    //TODO: agrear relacion de materia cuando este
-    //@ManyToOne
-    //@JoinColumn(name = "materia_id", nullable = false)
-    //private Materia materia;
+    @ManyToOne
+    @JoinColumn(name = "materia_id", nullable = false)
+    private Materia materia;
 
     @ManyToOne
     @JoinColumn(name = "profesor_id", nullable = false)
@@ -76,13 +75,13 @@ public class Curso {
         this.profesor = profesor;
     }
 
-    // public Materia getMateria() {
-    //     return profesor;
-    // }
+    public Materia getMateria() {
+        return materia;
+    }
 
-    // public void setMateria(Materia materia) {
-    //     this.materia = materia;
-    // }
+    public void setMateria(Materia materia) {
+        this.materia = materia;
+    }
 
     public Boolean getActivo() {
         return activo;

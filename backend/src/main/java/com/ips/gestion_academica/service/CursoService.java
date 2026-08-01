@@ -3,14 +3,17 @@ package com.ips.gestion_academica.service;
 import com.ips.gestion_academica.dto.curso.CursoRequest;
 import com.ips.gestion_academica.dto.curso.CursoResponse;
 import com.ips.gestion_academica.dto.usuario.UsuarioResumeResponse;
+import com.ips.gestion_academica.dto.materia.MateriaResponse;
 import com.ips.gestion_academica.exception.RecursoDuplicadoException;
 import com.ips.gestion_academica.exception.RecursoNoEncontradoException;
 import com.ips.gestion_academica.exception.RecursoInactivoException;
 import com.ips.gestion_academica.model.Curso;
 import com.ips.gestion_academica.model.Rol;
 import com.ips.gestion_academica.model.Usuario;
+import com.ips.gestion_academica.model.Materia;
 import com.ips.gestion_academica.repository.CursoRepository;
 import com.ips.gestion_academica.repository.UsuarioRepository;
+import com.ips.gestion_academica.repository.MateriaRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,13 +25,14 @@ public class CursoService {
 
     private final UsuarioRepository usuarioRepository;
     private final CursoRepository cursoRepository;
-
+    private final MateriaRepository materiaRepository;
     public CursoService(
         CursoRepository cursoRepository, 
-        UsuarioRepository usuarioRepository){
+        UsuarioRepository usuarioRepository,
+        MateriaRepository materiaRepository){
         this.cursoRepository = cursoRepository;
         this.usuarioRepository = usuarioRepository;
-
+        this.materiaRepository = materiaRepository;
     }
 
     private UsuarioResumeResponse convertirAResume(Usuario usuario) {
@@ -40,6 +44,17 @@ public class CursoService {
             usuario.getEmail()
         );
     }
+
+    private MateriaResponse convertirAResumeMateria(Materia materia) {
+        return new MateriaResponse(
+            materia.getId(),
+            materia.getCodigo(),
+            materia.getNombre(),
+            materia.getDescripcion(),
+            materia.getAnioCursada(),
+            materia.getActivo()
+        );
+    }
     private CursoResponse convertirAResponse(Curso curso) {
         return new CursoResponse(
                 curso.getId(),
@@ -47,8 +62,8 @@ public class CursoService {
                 curso.getCuatrimestre(),
                 curso.getComision(),
                 curso.getActivo(),
-                convertirAResume(curso.getProfesor())
-                //curso.getMateria(),
+                convertirAResume(curso.getProfesor()),
+                convertirAResumeMateria(curso.getMateria())
         );
     }
 
@@ -78,6 +93,18 @@ public class CursoService {
                 new RecursoNoEncontradoException("Usuario Profesor", request.getProfesorId())
         );
 
+        Materia materia = materiaRepository.findById(request.getMateriaId())
+        .orElseThrow(() ->
+                new RecursoNoEncontradoException("Materia", request.getProfesorId())
+        );
+
+        if (!Boolean.TRUE.equals(materia.getActivo())) {
+            throw new RecursoInactivoException(
+                    "Materia",
+                    materia.getId()
+            );
+        }
+
         if (!profesor.getActivo()) {
             throw new RecursoInactivoException(
                     "El profesor con ID ",profesor.getId());
@@ -94,18 +121,18 @@ public class CursoService {
         curso.setCuatrimestre(request.getCuatrimestre());
         curso.setComision(request.getComision());
         curso.setProfesor(profesor);
-        //curso.setMateria(request.getMateria());
+        curso.setMateria(materia);
 
         curso.setActivo(true);
 
-        if(cursoRepository.existsByAnioAndCuatrimestreAndComision(
+        if(cursoRepository.existsByAnioAndCuatrimestreAndComisionAndMateria_Id(
             request.getAnio(),
             request.getCuatrimestre(),
-            request.getComision()
-            //request.geMateria(),
+            request.getComision(),
+            materia.getId()
         )){
             throw new RecursoDuplicadoException(
-                "Ya existe una Materia con ese anio " + curso.getAnio() + " cuatrimestre " + curso.getCuatrimestre() + " comision " + curso.getComision() 
+                "Ya existe un Cusro con ese anio " + curso.getAnio() + " cuatrimestre " + curso.getCuatrimestre() + " comision " + curso.getComision() + "o Materia " + materia.getId()
             );
         }
 
@@ -117,14 +144,18 @@ public class CursoService {
         Curso curso = cursoRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Curso",id));
 
-        if(cursoRepository.existsByAnioAndCuatrimestreAndComision(
+        Materia materia = materiaRepository.findById(cursoModificado.getMateriaId())
+        .orElseThrow(() ->
+                new RecursoNoEncontradoException("Materia", cursoModificado.getMateriaId())
+        );
+        if(cursoRepository.existsByAnioAndCuatrimestreAndComisionAndMateria_Id(
             cursoModificado.getAnio(),
             cursoModificado.getCuatrimestre(),
-            cursoModificado.getComision()
-            //request.geMateria(),
+            cursoModificado.getComision(),
+            materia.getId()
         )){
             throw new RecursoDuplicadoException(
-                "Ya existe una Materia con ese anio " + curso.getAnio() + " cuatrimestre " + curso.getCuatrimestre() + " comision " + curso.getComision() 
+                "Ya existe un Curso con ese anio " + curso.getAnio() + " cuatrimestre " + curso.getCuatrimestre() + " comision " + curso.getComision() + "o  Materia" + curso.getMateria()
             );
         }
         if (!curso.getActivo()) {

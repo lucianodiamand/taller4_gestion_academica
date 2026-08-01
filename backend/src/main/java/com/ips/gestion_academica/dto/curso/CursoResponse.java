@@ -1,6 +1,7 @@
 package com.ips.gestion_academica.dto.curso;
 
 import com.ips.gestion_academica.dto.usuario.UsuarioResumeResponse;
+import com.ips.gestion_academica.dto.materia.MateriaResponse;
 
 public class CursoResponse {
     private Long id;
@@ -9,7 +10,7 @@ public class CursoResponse {
     private String comision;
     private boolean activo;
     private UsuarioResumeResponse profesor;
-    //private MateriaResponse materia;
+    private MateriaResponse materia;
 
     public CursoResponse(
             Long id,
@@ -17,13 +18,15 @@ public class CursoResponse {
             Integer cuatrimestre,
             String comision,
             boolean activo,
-            UsuarioResumeResponse profesor) {
+            UsuarioResumeResponse profesor,
+            MateriaResponse materia) {
         this.id = id;
         this.anio =anio;
         this.cuatrimestre = cuatrimestre;
         this.comision = comision;
         this.activo = activo;
         this.profesor = profesor;
+        this.materia = materia;
     }
 
     public Long getId() {
@@ -54,8 +57,8 @@ public class CursoResponse {
         return profesor;
     }
 
-    // public MateriaResponse getMateria(){
-    //     return profesor;
-    // }
+    public MateriaResponse getMateria(){
+        return materia;
+    }
 
 }

@@ -2,7 +2,6 @@ package com.ips.gestion_academica.service;
 
 import com.ips.gestion_academica.dto.usuario.UsuarioRequest;
 import com.ips.gestion_academica.dto.usuario.UsuarioResponse;
-import com.ips.gestion_academica.dto.usuario.UsuarioResumeResponse;
 import com.ips.gestion_academica.exception.RecursoDuplicadoException;
 import com.ips.gestion_academica.exception.RecursoNoEncontradoException;
 import com.ips.gestion_academica.exception.RecursoInactivoException;
