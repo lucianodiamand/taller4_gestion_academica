@@ -2,7 +2,6 @@ package com.ips.gestion_academica.controller;
 
 import com.ips.gestion_academica.dto.usuario.UsuarioRequest;
 import com.ips.gestion_academica.dto.usuario.UsuarioResponse;
-import com.ips.gestion_academica.model.Usuario;
 import com.ips.gestion_academica.service.UsuarioService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

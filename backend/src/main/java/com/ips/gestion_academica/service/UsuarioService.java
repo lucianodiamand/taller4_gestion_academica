@@ -2,9 +2,10 @@ package com.ips.gestion_academica.service;
 
 import com.ips.gestion_academica.dto.usuario.UsuarioRequest;
 import com.ips.gestion_academica.dto.usuario.UsuarioResponse;
+import com.ips.gestion_academica.dto.usuario.UsuarioResumeResponse;
 import com.ips.gestion_academica.exception.RecursoDuplicadoException;
 import com.ips.gestion_academica.exception.RecursoNoEncontradoException;
-import com.ips.gestion_academica.exception.UsuarioInactivoException;
+import com.ips.gestion_academica.exception.RecursoInactivoException;
 import com.ips.gestion_academica.model.Usuario;
 import com.ips.gestion_academica.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
@@ -43,10 +44,10 @@ public class UsuarioService {
 
     public UsuarioResponse buscarPorId(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
-            .orElseThrow(() -> new RecursoNoEncontradoException(id));
+            .orElseThrow(() -> new RecursoNoEncontradoException("Usuario",id));
 
         if (!usuario.getActivo()) {
-            throw new UsuarioInactivoException(id);
+            throw new RecursoInactivoException("Usuario",id);
         }
 
         return convertirAResponse(usuario);
@@ -88,7 +89,7 @@ public class UsuarioService {
 
     public UsuarioResponse modificarUsuario(Long id, UsuarioRequest usuarioModificado) {
         Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException(id));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario",id));
 
         if(usuarioRepository.existsByEmailAndIdNot(usuarioModificado.getEmail(),id)){
             throw new RecursoDuplicadoException(
@@ -108,7 +109,7 @@ public class UsuarioService {
         }
 
         if (!usuario.getActivo()) {
-            throw new UsuarioInactivoException(id);
+            throw new RecursoInactivoException("Usuario",id);
         }
 
         usuario.setNombre(usuarioModificado.getNombre());
@@ -125,11 +126,11 @@ public class UsuarioService {
 
     public void darDeBaja(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException(id));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario",id));
 
 
         if (!usuario.getActivo()) {
-            throw new UsuarioInactivoException(id);
+            throw new RecursoInactivoException("Usuario",id);
         }
         usuario.setActivo(false);
         usuarioRepository.save(usuario);

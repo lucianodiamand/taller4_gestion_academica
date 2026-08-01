@@ -26,9 +26,9 @@ public class GlobalExceptionHandler {
                 .body(ex.getMessage());
     }
 
-    @ExceptionHandler(UsuarioInactivoException.class)
+    @ExceptionHandler(RecursoInactivoException.class)
     public ResponseEntity<String> manejarUsuarioInactivo(
-            UsuarioInactivoException ex) {
+            RecursoInactivoException ex) {
 
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
