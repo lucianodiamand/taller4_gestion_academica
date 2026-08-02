@@ -5,7 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-//import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -29,9 +28,6 @@ public class Materia {
 
     @Column(nullable = false)
     private Boolean activo;
-    
-    /*@OneToMany(mappedBy = "materia")
-    private List<Curso> cursos;*/
 
     public Long getId() {
         return id;
@@ -80,6 +76,4 @@ public class Materia {
     public void setActivo(Boolean activo) {
         this.activo = activo;
     }
-
-    
 }
