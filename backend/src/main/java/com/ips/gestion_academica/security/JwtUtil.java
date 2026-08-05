@@ -27,9 +27,9 @@ public class JwtUtil {
         this.expiration = expiration;
     }
 
-    public String generarToken(String dni, Rol rol) {
+    public String generarToken(String legajo, Rol rol) {
         return Jwts.builder()
-                .subject(dni)
+                .subject(legajo)
                 .claim("rol", rol.name())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expiration))
@@ -37,7 +37,7 @@ public class JwtUtil {
                 .compact();
     }
 
-    public String extraerDni(String token) {
+    public String extraerLegajo(String token) {
         return getClaims(token).getSubject();
     }
 

@@ -29,12 +29,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String token = header.substring(7);
 
             if (jwtUtil.esValido(token)) {
-                String dni = jwtUtil.extraerDni(token);
+                String legajo = jwtUtil.extraerLegajo(token);
                 String rol = jwtUtil.extraerRol(token);
 
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(
-                                dni, null,
+                                legajo, null,
                                 List.of(new SimpleGrantedAuthority("ROLE_" + rol))
                         );
                 SecurityContextHolder.getContext().setAuthentication(auth);

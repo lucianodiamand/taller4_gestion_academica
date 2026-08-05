@@ -2,17 +2,17 @@ package com.ips.gestion_academica.dto.auth;
 
 public class LoginRequest {
 
-    private String dni;
+    private String legajo;
     private String password;
 
     public LoginRequest() {}
 
-    public String getDni() {
-        return dni;
+    public String getLegajo() {
+        return legajo;
     }
 
-    public void setDni(String dni) {
-        this.dni = dni;
+    public void setLegajo(String legajo) {
+        this.legajo = legajo;
     }
 
     public String getPassword() {

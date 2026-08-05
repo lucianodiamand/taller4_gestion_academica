@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ips.gestion_academica.dto.auth.LoginRequest;
+import com.ips.gestion_academica.exception.CredencialesInvalidasException;
 import com.ips.gestion_academica.exception.RecursoNoEncontradoException;
 import com.ips.gestion_academica.model.Usuario;
 import com.ips.gestion_academica.repository.UsuarioRepository;
@@ -27,15 +28,15 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        Usuario usuario = usuarioRepository.findByDni(request.getDni())
+    public ResponseEntity<Map<String, String>> login(@RequestBody LoginRequest request) {
+        Usuario usuario = usuarioRepository.findByLegajo(request.getLegajo())
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario", null));
 
         if (!request.getPassword().equals(usuario.getPassword())) {
-            return ResponseEntity.status(401).body(Map.of("error", "Credenciales invalidas"));
+            throw new CredencialesInvalidasException();
         }
 
-        String token = jwtUtil.generarToken(usuario.getDni(), usuario.getRol());
+        String token = jwtUtil.generarToken(usuario.getLegajo(), usuario.getRol());
         return ResponseEntity.ok(Map.of("token", token));
     }
 }

@@ -21,6 +21,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     List<Usuario> findByActivoTrue();
 
+    Optional<Usuario> findByLegajo(String legajo);
+
     Optional<Usuario> findByDni(String dni);
 
 }
