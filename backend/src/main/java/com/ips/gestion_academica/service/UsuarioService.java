@@ -7,6 +7,7 @@ import com.ips.gestion_academica.exception.RecursoNoEncontradoException;
 import com.ips.gestion_academica.exception.RecursoInactivoException;
 import com.ips.gestion_academica.model.Usuario;
 import com.ips.gestion_academica.repository.UsuarioRepository;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,9 +18,11 @@ import java.util.List;
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
 
-    public UsuarioService(UsuarioRepository usuarioRepository) {
+    public UsuarioService(UsuarioRepository usuarioRepository, BCryptPasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     private UsuarioResponse convertirAResponse(Usuario usuario) {
@@ -59,7 +62,7 @@ public class UsuarioService {
         usuario.setApellido(request.getApellido());
         usuario.setDni(request.getDni());
         usuario.setEmail(request.getEmail());
-        usuario.setPassword(request.getPassword());
+        usuario.setPassword(passwordEncoder.encode(request.getPassword()));
         usuario.setLegajo(request.getLegajo());
         usuario.setRol(request.getRol());
 

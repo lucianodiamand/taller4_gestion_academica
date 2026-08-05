@@ -15,16 +15,21 @@ import com.ips.gestion_academica.model.Usuario;
 import com.ips.gestion_academica.repository.UsuarioRepository;
 import com.ips.gestion_academica.security.JwtUtil;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
     private final UsuarioRepository usuarioRepository;
     private final JwtUtil jwtUtil;
+    private final BCryptPasswordEncoder passwordEncoder;
 
-    public AuthController(UsuarioRepository usuarioRepository, JwtUtil jwtUtil) {
+    public AuthController(UsuarioRepository usuarioRepository, JwtUtil jwtUtil,
+                          BCryptPasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
         this.jwtUtil = jwtUtil;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping("/login")
@@ -32,7 +37,7 @@ public class AuthController {
         Usuario usuario = usuarioRepository.findByLegajo(request.getLegajo())
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario", null));
 
-        if (!request.getPassword().equals(usuario.getPassword())) {
+        if (!passwordEncoder.matches(request.getPassword(), usuario.getPassword())) {
             throw new CredencialesInvalidasException();
         }
 
