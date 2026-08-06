@@ -5,6 +5,13 @@
       <h1 class="home-title">Legajo {{ authService.usuario()?.legajo }}</h1>
       <p class="home-role">Rol: {{ authService.usuario()?.rol }}</p>
     </div>
+
+    @if (authService.tienePermiso([Rol.ADMIN])) {
+      <a routerLink="/usuarios">
+        Gestión de usuarios
+      </a>
+    }
+
     <button class="home-logout" type="button" (click)="authService.logout()">
       Cerrar sesión
     </button>

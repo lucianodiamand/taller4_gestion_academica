@@ -1,0 +1,51 @@
+<h1>Gestión de usuarios</h1>
+
+<button type="button" (click)="abrirFormulario()">
+  Nuevo usuario
+</button>
+
+<br><br>
+
+<div *ngIf="mostrarFormulario">
+
+  <h2>Crear usuario</h2>
+
+  <p>Formulario de creación de usuarios</p>
+
+  <button type="button" (click)="cerrarFormulario()">
+    Cancelar
+  </button>
+
+</div>
+
+<br>
+
+<table border="1">
+
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Nombre</th>
+      <th>Apellido</th>
+      <th>Legajo</th>
+      <th>Email</th>
+      <th>Rol</th>
+    </tr>
+  </thead>
+
+  <tbody>
+
+    <tr *ngFor="let usuario of usuarios">
+
+      <td>{{usuario.id}}</td>
+      <td>{{usuario.nombre}}</td>
+      <td>{{usuario.apellido}}</td>
+      <td>{{usuario.legajo}}</td>
+      <td>{{usuario.email}}</td>
+      <td>{{usuario.rol}}</td>
+
+    </tr>
+
+  </tbody>
+
+</table>
