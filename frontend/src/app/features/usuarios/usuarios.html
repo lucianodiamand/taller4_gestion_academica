@@ -1,51 +1,143 @@
-<h1>Gestión de usuarios</h1>
+<div class="usuarios-page">
+  <header class="usuarios-header">
+    <div>
+      <h1 class="usuarios-title">Gestión de usuarios</h1>
+      <p class="usuarios-subtitle">Alta, edición y baja de usuarios del sistema</p>
+    </div>
+    <button class="btn btn-primary" type="button" (click)="abrirFormularioCrear()">
+      + Nuevo usuario
+    </button>
+  </header>
 
-<button type="button" (click)="abrirFormulario()">
-  Nuevo usuario
-</button>
+  @if (error()) {
+    <p class="alert" role="alert">{{ error() }}</p>
+  }
 
-<br><br>
+  @if (cargando()) {
+    <p class="usuarios-loading">Cargando usuarios…</p>
+  } @else {
+    <table class="usuarios-table">
+      <thead>
+        <tr>
+          <th>Legajo</th>
+          <th>Nombre</th>
+          <th>Apellido</th>
+          <th>Email</th>
+          <th>Rol</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (usuario of usuarios(); track usuario.id) {
+          <tr>
+            <td>{{ usuario.legajo }}</td>
+            <td>{{ usuario.nombre }}</td>
+            <td>{{ usuario.apellido }}</td>
+            <td>{{ usuario.email }}</td>
+            <td><span class="rol-badge">{{ usuario.rol }}</span></td>
+            <td class="usuarios-acciones">
+              <button class="btn btn-link" type="button" (click)="abrirFormularioEditar(usuario)">
+                Editar
+              </button>
+              <button class="btn btn-link btn-danger" type="button" (click)="eliminar(usuario)">
+                Dar de baja
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="usuarios-vacio">No hay usuarios cargados todavía.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
 
-<div *ngIf="mostrarFormulario">
+  @if (modo()) {
+    <div class="modal-overlay" (click)="cerrarFormulario()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <h2 class="modal-title">
+          {{ modo() === 'crear' ? 'Nuevo usuario' : 'Editar usuario' }}
+        </h2>
 
-  <h2>Crear usuario</h2>
+        <form class="usuario-form" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+          <div class="form-row">
+            <label class="form-field">
+              <span class="form-label">Nombre</span>
+              <input class="form-input" type="text" formControlName="nombre" />
+              @if (form.controls.nombre.touched && form.controls.nombre.invalid) {
+                <span class="form-error">Requerido</span>
+              }
+            </label>
 
-  <p>Formulario de creación de usuarios</p>
+            <label class="form-field">
+              <span class="form-label">Apellido</span>
+              <input class="form-input" type="text" formControlName="apellido" />
+              @if (form.controls.apellido.touched && form.controls.apellido.invalid) {
+                <span class="form-error">Requerido</span>
+              }
+            </label>
+          </div>
 
-  <button type="button" (click)="cerrarFormulario()">
-    Cancelar
-  </button>
+          <div class="form-row">
+            <label class="form-field">
+              <span class="form-label">Legajo</span>
+              <input class="form-input" type="text" formControlName="legajo" />
+              @if (form.controls.legajo.touched && form.controls.legajo.invalid) {
+                <span class="form-error">Requerido</span>
+              }
+            </label>
 
+            <label class="form-field">
+              <span class="form-label">DNI</span>
+              <input class="form-input" type="text" formControlName="dni" />
+              @if (form.controls.dni.touched && form.controls.dni.invalid) {
+                <span class="form-error">Requerido</span>
+              }
+            </label>
+          </div>
+
+          <label class="form-field">
+            <span class="form-label">Email</span>
+            <input class="form-input" type="email" formControlName="email" />
+            @if (form.controls.email.touched && form.controls.email.invalid) {
+              <span class="form-error">Ingresá un email válido</span>
+            }
+          </label>
+
+          @if (modo() === 'crear') {
+            <label class="form-field">
+              <span class="form-label">Contraseña</span>
+              <input class="form-input" type="password" formControlName="password" />
+              @if (form.controls.password.touched && form.controls.password.invalid) {
+                <span class="form-error">Requerido</span>
+              }
+            </label>
+          }
+
+          <label class="form-field">
+            <span class="form-label">Rol</span>
+            <select class="form-input" formControlName="rol">
+              @for (rol of roles; track rol) {
+                <option [value]="rol">{{ rol }}</option>
+              }
+            </select>
+          </label>
+
+          @if (errorFormulario()) {
+            <p class="alert" role="alert">{{ errorFormulario() }}</p>
+          }
+
+          <div class="modal-actions">
+            <button class="btn btn-secondary" type="button" (click)="cerrarFormulario()">
+              Cancelar
+            </button>
+            <button class="btn btn-primary" type="submit" [disabled]="guardando()">
+              {{ guardando() ? 'Guardando…' : 'Guardar' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
 </div>
-
-<br>
-
-<table border="1">
-
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Nombre</th>
-      <th>Apellido</th>
-      <th>Legajo</th>
-      <th>Email</th>
-      <th>Rol</th>
-    </tr>
-  </thead>
-
-  <tbody>
-
-    <tr *ngFor="let usuario of usuarios">
-
-      <td>{{usuario.id}}</td>
-      <td>{{usuario.nombre}}</td>
-      <td>{{usuario.apellido}}</td>
-      <td>{{usuario.legajo}}</td>
-      <td>{{usuario.email}}</td>
-      <td>{{usuario.rol}}</td>
-
-    </tr>
-
-  </tbody>
-
-</table>
