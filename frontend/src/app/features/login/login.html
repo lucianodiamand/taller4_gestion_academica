@@ -1,0 +1,52 @@
+<div class="login-page">
+  <div class="login-card">
+    <div class="login-seal" aria-hidden="true">GA</div>
+
+    <h1 class="login-title">Gestión Académica</h1>
+    <p class="login-subtitle">Ingresá con tu legajo para continuar</p>
+
+    <form class="login-form" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+      <label class="login-field">
+        <span class="login-label">Legajo</span>
+        <input
+          class="login-input"
+          type="text"
+          formControlName="legajo"
+          autocomplete="username"
+          placeholder="Ej: A2024-0451"
+        />
+        @if (form.controls.legajo.touched && form.controls.legajo.invalid) {
+          <span class="login-field-error">Ingresá tu legajo</span>
+        }
+      </label>
+
+      <label class="login-field">
+        <span class="login-label">Contraseña</span>
+        <input
+          class="login-input"
+          type="password"
+          formControlName="password"
+          autocomplete="current-password"
+          placeholder="••••••••"
+        />
+        @if (form.controls.password.touched && form.controls.password.invalid) {
+          <span class="login-field-error">Ingresá tu contraseña</span>
+        }
+      </label>
+
+      @if (error()) {
+        <p class="login-alert" role="alert">{{ error() }}</p>
+      }
+
+      <button class="login-submit" type="submit" [disabled]="cargando()">
+        {{ cargando() ? 'Ingresando…' : 'Ingresar' }}
+      </button>
+    </form>
+
+    <div class="login-roles" aria-hidden="true">
+      <span class="login-role">Alumno</span>
+      <span class="login-role">Profesor</span>
+      <span class="login-role">Admin</span>
+    </div>
+  </div>
+</div>

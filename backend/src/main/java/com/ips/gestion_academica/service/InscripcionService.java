@@ -17,6 +17,9 @@ import com.ips.gestion_academica.repository.CursoRepository;
 import com.ips.gestion_academica.repository.InscripcionRepository;
 import com.ips.gestion_academica.repository.UsuarioRepository;
 
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -69,6 +72,8 @@ public class InscripcionService {
                     "El usuario seleccionado no tiene rol de alumno"
             );
         }
+
+        validarPropietarioSiEsAlumno(alumno.getLegajo());
 
         if (!Boolean.TRUE.equals(curso.getActivo())) {
             throw new RecursoInactivoException(
@@ -246,6 +251,27 @@ public class InscripcionService {
         inscripcion.setActivo(false);
 
         inscripcionRepository.save(inscripcion);
+    }
+
+    /**
+     * Si quien hace la request tiene rol ALUMNO, solo puede inscribirse
+     * a si mismo (el legajo del token debe coincidir con el del alumno
+     * de la inscripcion). ADMIN y PROFESOR pueden inscribir a cualquiera.
+     */
+    private void validarPropietarioSiEsAlumno(String legajoAlumnoSolicitado) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        boolean esAlumno = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ALUMNO"));
+
+        if (esAlumno) {
+            String legajoLogueado = (String) auth.getPrincipal();
+            if (!legajoLogueado.equals(legajoAlumnoSolicitado)) {
+                throw new AccessDeniedException(
+                        "Un alumno solo puede inscribirse a si mismo"
+                );
+            }
+        }
     }
 
     private InscripcionResponse convertirAResponse(

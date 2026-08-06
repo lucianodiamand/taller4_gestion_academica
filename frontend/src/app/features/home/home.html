@@ -1,0 +1,18 @@
+<div class="home-page">
+  <header class="home-header">
+    <div>
+      <p class="home-eyebrow">Sesión iniciada</p>
+      <h1 class="home-title">Legajo {{ authService.usuario()?.legajo }}</h1>
+      <p class="home-role">Rol: {{ authService.usuario()?.rol }}</p>
+    </div>
+    <button class="home-logout" type="button" (click)="authService.logout()">
+      Cerrar sesión
+    </button>
+  </header>
+
+  <p class="home-note">
+    Esta pantalla es un placeholder para verificar que el login, el guard
+    y el interceptor de JWT funcionan de punta a punta. Cada equipo puede
+    reemplazarla por su propia sección (ABM Materias, Cursos, etc.).
+  </p>
+</div>

@@ -50,14 +50,25 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/usuarios/**").permitAll()
 
-                // esto lo deje temporal para probar los permisos con distintos roles y la cuenta logeada
-                // todos pueden hacer el get de materias pero el ABM es solo para admins
+                // Usuarios: recurso sensible, solo ADMIN puede listar/crear/modificar/dar de baja
+                .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
+
+                // Materias: todos los logueados pueden consultar, el ABM es solo de ADMIN
                 .requestMatchers(HttpMethod.GET, "/api/materias/**").authenticated()
                 .requestMatchers("/api/materias/**").hasRole("ADMIN")
-                // ---
-                
+
+                // Cursos: todos los logueados pueden consultar, el ABM es solo de ADMIN
+                .requestMatchers(HttpMethod.GET, "/api/cursos/**").authenticated()
+                .requestMatchers("/api/cursos/**").hasRole("ADMIN")
+
+                // Inscripciones: ALUMNO se inscribe a si mismo (validado en el service),
+                // PROFESOR y ADMIN gestionan estado y consultan, solo ADMIN da de baja
+                .requestMatchers(HttpMethod.POST, "/api/inscripciones").hasAnyRole("ADMIN", "ALUMNO")
+                .requestMatchers(HttpMethod.PUT, "/api/inscripciones/*/estado").hasAnyRole("ADMIN", "PROFESOR")
+                .requestMatchers(HttpMethod.DELETE, "/api/inscripciones/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/inscripciones/**").hasAnyRole("ADMIN", "PROFESOR")
+
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
