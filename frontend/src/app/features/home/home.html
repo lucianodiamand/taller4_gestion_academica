@@ -6,15 +6,20 @@
       <p class="home-role">Rol: {{ authService.usuario()?.rol }}</p>
     </div>
 
-    @if (authService.tienePermiso([Rol.ADMIN])) {
-      <a routerLink="/usuarios">
-        Gestión de usuarios
+    <div class="home-nav">
+      @if (authService.tienePermiso([Rol.ADMIN])) {
+        <a routerLink="/usuarios" class="home-btn">
+          Gestión de usuarios
+        </a>
+      }
+      <a routerLink="/examenes" class="home-btn">
+        Exámenes
       </a>
-    }
 
-    <button class="home-logout" type="button" (click)="authService.logout()">
-      Cerrar sesión
-    </button>
+      <button class="home-logout" type="button" (click)="authService.logout()">
+        Cerrar sesión
+      </button>
+    </div>
   </header>
 
   <p class="home-note">

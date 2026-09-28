@@ -12,7 +12,7 @@
   color: var(--color-ink);
 }
 
-.usuarios-nav {
+.examenes-nav {
   margin-bottom: 0.5rem;
 }
 
@@ -28,7 +28,7 @@
   color: var(--color-ink);
 }
 
-.usuarios-header {
+.examenes-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -37,21 +37,21 @@
   margin-bottom: 1.5rem;
 }
 
-.usuarios-title {
+.examenes-title {
   margin: 0 0 0.25rem;
   font-size: 1.5rem;
 }
 
-.usuarios-subtitle {
+.examenes-subtitle {
   margin: 0;
   color: var(--color-muted);
 }
 
-.usuarios-loading {
+.examenes-loading {
   color: var(--color-muted);
 }
 
-.usuarios-table {
+.examenes-table {
   width: 100%;
   border-collapse: collapse;
   background: #fff;
@@ -60,15 +60,15 @@
   overflow: hidden;
 }
 
-.usuarios-table th,
-.usuarios-table td {
+.examenes-table th,
+.examenes-table td {
   text-align: left;
-  padding: 0.7rem 0.9rem;
+  padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--color-border);
   font-size: 0.9rem;
 }
 
-.usuarios-table th {
+.examenes-table th {
   background: #f6f7f9;
   font-weight: 600;
   color: var(--color-muted);
@@ -77,24 +77,51 @@
   letter-spacing: 0.03em;
 }
 
-.usuarios-vacio {
-  text-align: center;
-  color: var(--color-muted);
-  padding: 1.5rem;
+.col-fecha {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
 }
 
-.rol-badge {
+.curso-detalle {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--color-muted);
+}
+
+.examenes-vacio {
+  text-align: center;
+  color: var(--color-muted);
+  padding: 2rem;
+}
+
+.tipo-badge {
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.03em;
   text-transform: uppercase;
-  color: var(--color-accent-ink);
-  background: rgba(201, 162, 39, 0.12);
   border-radius: 999px;
-  padding: 0.2rem 0.6rem;
+  padding: 0.25rem 0.65rem;
+  display: inline-block;
+  background: #eef2f6;
+  color: var(--color-muted);
 }
 
-.usuarios-acciones {
+.tipo-badge[data-tipo='PARCIAL'] {
+  background: rgba(30, 100, 220, 0.12);
+  color: #1a56b2;
+}
+
+.tipo-badge[data-tipo='RECUPERATORIO'] {
+  background: rgba(220, 140, 20, 0.15);
+  color: #9c5c05;
+}
+
+.tipo-badge[data-tipo='FINAL'] {
+  background: rgba(180, 40, 40, 0.12);
+  color: #a82020;
+}
+
+.examenes-acciones {
   display: flex;
   gap: 0.75rem;
 }
@@ -114,81 +141,82 @@
   color: #fff;
 }
 
-.btn-primary:hover:not(:disabled) {
-  background: #223055;
-}
-
-.btn-primary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.btn-primary:hover {
+  opacity: 0.9;
 }
 
 .btn-secondary {
-  background: #fff;
+  background: #f0f2f5;
   color: var(--color-ink);
-  border: 1.5px solid var(--color-border);
+}
+
+.btn-secondary:hover {
+  background: #e4e7ec;
 }
 
 .btn-link {
-  background: none;
-  padding: 0.2rem 0;
-  color: var(--color-accent-ink);
-  font-size: 0.85rem;
+  background: transparent;
+  color: var(--color-ink);
+  padding: 0;
+  border-radius: 0;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
-.btn-danger {
+.btn-link.btn-danger {
   color: var(--color-danger);
 }
 
 .alert {
-  margin: 0 0 1rem;
-  padding: 0.6rem 0.85rem;
-  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
   background: rgba(179, 38, 30, 0.08);
+  border: 1px solid rgba(179, 38, 30, 0.25);
   color: var(--color-danger);
-  font-size: 0.85rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
 }
 
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 26, 43, 0.55);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1.5rem;
-  z-index: 20;
+  background: rgba(22, 33, 58, 0.5);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  z-index: 100;
 }
 
 .modal {
-  width: 100%;
-  max-width: 480px;
-  max-height: 90vh;
-  overflow-y: auto;
   background: #fff;
-  border-radius: 0.9rem;
-  padding: 1.75rem;
-  box-sizing: border-box;
+  border-radius: 0.75rem;
+  max-width: 520px;
+  width: 100%;
+  padding: 1.5rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
 }
 
 .modal-title {
   margin: 0 0 1.25rem;
-  font-size: 1.2rem;
+  font-size: 1.25rem;
 }
 
-.usuario-form {
+.examen-form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
 .form-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 1rem;
 }
 
-.form-row .form-field {
-  flex: 1;
+@media (max-width: 600px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 .form-field {
@@ -198,24 +226,26 @@
 }
 
 .form-label {
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 600;
+  color: var(--color-muted);
 }
 
 .form-input {
   font: inherit;
   padding: 0.6rem 0.75rem;
-  border-radius: 0.5rem;
-  border: 1.5px solid var(--color-border);
-  background: #fbfbfc;
-  color: var(--color-ink);
-  box-sizing: border-box;
+  border: 1px solid var(--color-border);
+  border-radius: 0.4rem;
+  font-size: 0.9rem;
 }
 
-.form-input:focus-visible {
-  outline: none;
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.25);
+.form-input:focus {
+  outline: 2px solid var(--color-ink);
+  outline-offset: -1px;
+}
+
+.form-textarea {
+  resize: vertical;
 }
 
 .form-error {
@@ -228,14 +258,4 @@
   justify-content: flex-end;
   gap: 0.75rem;
   margin-top: 0.5rem;
-}
-
-@media (max-width: 520px) {
-  :host {
-    padding: 1.25rem;
-  }
-
-  .form-row {
-    flex-direction: column;
-  }
 }
