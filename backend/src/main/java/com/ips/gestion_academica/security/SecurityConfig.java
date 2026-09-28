@@ -69,6 +69,10 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE, "/api/inscripciones/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/inscripciones/**").hasAnyRole("ADMIN", "PROFESOR")
 
+                // Examenes: todos los logueados pueden consultar, la gestion es de ADMIN y PROFESOR
+                .requestMatchers(HttpMethod.GET, "/api/examenes/**").authenticated()
+                .requestMatchers("/api/examenes/**").hasAnyRole("ADMIN", "PROFESOR")
+
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
