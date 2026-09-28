@@ -30,6 +30,7 @@ public class UsuarioService {
                 usuario.getId(),
                 usuario.getNombre(),
                 usuario.getApellido(),
+                usuario.getDni(),
                 usuario.getLegajo(),
                 usuario.getEmail(),
                 usuario.getActivo(),

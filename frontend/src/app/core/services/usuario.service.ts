@@ -8,6 +8,7 @@ export interface Usuario {
   id: number;
   nombre: string;
   apellido: string;
+  dni: string;
   legajo: string;
   email: string;
   activo: boolean;

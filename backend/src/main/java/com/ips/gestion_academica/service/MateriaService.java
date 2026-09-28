@@ -49,6 +49,11 @@ public class MateriaService {
     public MateriaResponse obtenerMateriaPorId(Long id) {
         Materia materia = materiaRepository.findById(id)
             .orElseThrow(() -> new RecursoNoEncontradoException("Materia", id));
+
+        if (!Boolean.TRUE.equals(materia.getActivo())) {
+            throw new RecursoInactivoException("Materia", id);
+        }
+
         return convertirAResponse(materia);
     }
 
@@ -63,7 +68,7 @@ public class MateriaService {
         Materia materia = materiaRepository.findById(id)
             .orElseThrow(() -> new RecursoNoEncontradoException("Materia", id));
 
-        if (!materia.getActivo()) {
+        if (!Boolean.TRUE.equals(materia.getActivo())) {
             throw new RecursoInactivoException("Materia", id);
         }
         
@@ -74,6 +79,10 @@ public class MateriaService {
     public MateriaResponse actualizarMateria(Long id, MateriaRequest request) {
         Materia materia = materiaRepository.findById(id)
             .orElseThrow(() -> new RecursoNoEncontradoException("Materia", id));
+
+        if (!Boolean.TRUE.equals(materia.getActivo())) {
+            throw new RecursoInactivoException("Materia", id);
+        }
 
         if (!materia.getCodigo().equals(request.getCodigo()) && materiaRepository.existsByCodigo(request.getCodigo())) {
             throw new RecursoDuplicadoException("Ya existe una materia con el código: " + request.getCodigo());

@@ -95,7 +95,7 @@ public class CursoService {
 
         Materia materia = materiaRepository.findById(request.getMateriaId())
         .orElseThrow(() ->
-                new RecursoNoEncontradoException("Materia", request.getProfesorId())
+                new RecursoNoEncontradoException("Materia", request.getMateriaId())
         );
 
         if (!Boolean.TRUE.equals(materia.getActivo())) {
@@ -142,34 +142,41 @@ public class CursoService {
 
     public CursoResponse modificarCurso(Long id, CursoRequest cursoModificado) {
         Curso curso = cursoRepository.findById(id)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Curso",id));
+                .orElseThrow(() -> new RecursoNoEncontradoException("Curso", id));
+
+        if (!curso.getActivo()) {
+            throw new RecursoInactivoException("Curso", id);
+        }
 
         Materia materia = materiaRepository.findById(cursoModificado.getMateriaId())
-        .orElseThrow(() ->
-                new RecursoNoEncontradoException("Materia", cursoModificado.getMateriaId())
-        );
-        if(cursoRepository.existsByAnioAndCuatrimestreAndComisionAndMateria_Id(
-            cursoModificado.getAnio(),
-            cursoModificado.getCuatrimestre(),
-            cursoModificado.getComision(),
-            materia.getId()
-        )){
-            throw new RecursoDuplicadoException(
-                "Ya existe un Curso con ese anio " + curso.getAnio() + " cuatrimestre " + curso.getCuatrimestre() + " comision " + curso.getComision() + "o  Materia" + curso.getMateria()
-            );
+                .orElseThrow(() ->
+                        new RecursoNoEncontradoException("Materia", cursoModificado.getMateriaId())
+                );
+
+        if (!Boolean.TRUE.equals(materia.getActivo())) {
+            throw new RecursoInactivoException("Materia", materia.getId());
         }
-        if (!curso.getActivo()) {
-            throw new RecursoInactivoException("Curso",id);
+
+        if (cursoRepository.existsByAnioAndCuatrimestreAndComisionAndMateria_IdAndIdNot(
+                cursoModificado.getAnio(),
+                cursoModificado.getCuatrimestre(),
+                cursoModificado.getComision(),
+                materia.getId(),
+                id
+        )) {
+            throw new RecursoDuplicadoException(
+                "Ya existe un Curso con ese anio " + cursoModificado.getAnio() + " cuatrimestre " + cursoModificado.getCuatrimestre() + " comision " + cursoModificado.getComision() + " y Materia " + materia.getId()
+            );
         }
 
         Usuario profesor = usuarioRepository.findById(cursoModificado.getProfesorId())
-        .orElseThrow(() ->
-                new RecursoNoEncontradoException("Usuario Profesor", cursoModificado.getProfesorId())
-        );
+                .orElseThrow(() ->
+                        new RecursoNoEncontradoException("Usuario Profesor", cursoModificado.getProfesorId())
+                );
 
         if (!profesor.getActivo()) {
             throw new RecursoInactivoException(
-                    "El profesor con ID ",profesor.getId());
+                    "El profesor con ID ", profesor.getId());
         }
 
         if (profesor.getRol() != Rol.PROFESOR) {
@@ -177,10 +184,12 @@ public class CursoService {
                 "El usuario seleccionado no tiene rol de profesor"
             );
         }
+
         curso.setAnio(cursoModificado.getAnio());
         curso.setCuatrimestre(cursoModificado.getCuatrimestre());
         curso.setComision(cursoModificado.getComision());
         curso.setProfesor(profesor);
+        curso.setMateria(materia);
 
         Curso cursoGuardado = cursoRepository.save(curso);
 

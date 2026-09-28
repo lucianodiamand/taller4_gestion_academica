@@ -15,14 +15,21 @@ import com.ips.gestion_academica.repository.CursoRepository;
 import com.ips.gestion_academica.repository.InscripcionRepository;
 import com.ips.gestion_academica.repository.UsuarioRepository;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -43,6 +50,21 @@ class InscripcionServiceTest {
 
     @InjectMocks
     private InscripcionService inscripcionService;
+
+    @BeforeEach
+    void setUp() {
+        Authentication auth = new UsernamePasswordAuthenticationToken(
+                "A001",
+                null,
+                List.of(new SimpleGrantedAuthority("ROLE_ALUMNO"))
+        );
+        SecurityContextHolder.getContext().setAuthentication(auth);
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
+    }
 
     private InscripcionRequest crearRequestValido() {
         InscripcionRequest request = new InscripcionRequest();

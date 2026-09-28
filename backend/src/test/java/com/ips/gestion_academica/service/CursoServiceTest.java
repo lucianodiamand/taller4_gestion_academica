@@ -253,5 +253,61 @@ class CursoServiceTest {
         assertSame(materia, cursoGuardado.getMateria());
     }
 
-    
+    @Test
+    void modificarCurso_deberiaModificarCursoExitosamente() {
+        Long cursoId = 1L;
+        CursoRequest request = crearRequestValido();
+        request.setComision("C");
+
+        Curso cursoExistente = new Curso();
+        cursoExistente.setId(cursoId);
+        cursoExistente.setAnio(2026);
+        cursoExistente.setCuatrimestre(1);
+        cursoExistente.setComision("A");
+        cursoExistente.setActivo(true);
+
+        Usuario profesor = crearProfesorActivo();
+        Materia materia = crearMateriaActiva();
+
+        when(cursoRepository.findById(cursoId)).thenReturn(Optional.of(cursoExistente));
+        when(materiaRepository.findById(request.getMateriaId())).thenReturn(Optional.of(materia));
+        when(cursoRepository.existsByAnioAndCuatrimestreAndComisionAndMateria_IdAndIdNot(
+                request.getAnio(), request.getCuatrimestre(), request.getComision(), materia.getId(), cursoId
+        )).thenReturn(false);
+        when(usuarioRepository.findById(request.getProfesorId())).thenReturn(Optional.of(profesor));
+        when(cursoRepository.save(any(Curso.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        CursoResponse response = cursoService.modificarCurso(cursoId, request);
+
+        assertNotNull(response);
+        assertEquals("C", response.getComision());
+        assertEquals(materia.getId(), response.getMateria().getId());
+        assertEquals(profesor.getId(), response.getProfesor().getId());
+        verify(cursoRepository).save(cursoExistente);
+    }
+
+    @Test
+    void modificarCurso_deberiaLanzarRecursoDuplicadoExceptionCuandoYaExisteOtroCurso() {
+        Long cursoId = 1L;
+        CursoRequest request = crearRequestValido();
+
+        Curso cursoExistente = new Curso();
+        cursoExistente.setId(cursoId);
+        cursoExistente.setActivo(true);
+
+        Materia materia = crearMateriaActiva();
+
+        when(cursoRepository.findById(cursoId)).thenReturn(Optional.of(cursoExistente));
+        when(materiaRepository.findById(request.getMateriaId())).thenReturn(Optional.of(materia));
+        when(cursoRepository.existsByAnioAndCuatrimestreAndComisionAndMateria_IdAndIdNot(
+                request.getAnio(), request.getCuatrimestre(), request.getComision(), materia.getId(), cursoId
+        )).thenReturn(true);
+
+        assertThrows(
+                com.ips.gestion_academica.exception.RecursoDuplicadoException.class,
+                () -> cursoService.modificarCurso(cursoId, request)
+        );
+
+        verify(cursoRepository, never()).save(any(Curso.class));
+    }
 }

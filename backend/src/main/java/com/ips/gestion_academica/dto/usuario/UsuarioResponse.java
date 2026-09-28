@@ -7,6 +7,7 @@ public class UsuarioResponse {
     private Long id;
     private String nombre;
     private String apellido;
+    private String dni;
     private String legajo;
     private String email;
     private boolean activo;
@@ -16,6 +17,7 @@ public class UsuarioResponse {
             Long id,
             String nombre,
             String apellido,
+            String dni,
             String legajo,
             String email,
             boolean activo,
@@ -23,6 +25,7 @@ public class UsuarioResponse {
         this.id = id;
         this.nombre = nombre;
         this.apellido = apellido;
+        this.dni = dni;
         this.legajo = legajo;
         this.email = email;
         this.activo = activo;
@@ -41,6 +44,10 @@ public class UsuarioResponse {
         return apellido;
     }
 
+    public String getDni() {
+        return dni;
+    }
+
     public String getLegajo() {
         return legajo;
     }
@@ -56,5 +63,4 @@ public class UsuarioResponse {
     public Rol getRol() {
         return rol;
     }
-
 }

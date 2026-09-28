@@ -291,4 +291,34 @@ public class MateriaServiceTest {
         verify(materiaRepository, never()).save(any(Materia.class));
     }
 
+    @Test
+    void buscarPorId_deberiaLanzarErrorCuandoMateriaEstaInactiva() {
+        Materia materia = crearMateriaActiva();
+        materia.setActivo(false);
+
+        when(materiaRepository.findById(1L))
+                .thenReturn(Optional.of(materia));
+
+        assertThrows(
+                RecursoInactivoException.class,
+                () -> materiaService.obtenerMateriaPorId(1L)
+        );
+    }
+
+    @Test
+    void modificarMateria_deberiaLanzarErrorCuandoMateriaEstaInactiva() {
+        Materia materia = crearMateriaActiva();
+        materia.setActivo(false);
+        MateriaRequest request = crearRequestValido();
+
+        when(materiaRepository.findById(1L))
+                .thenReturn(Optional.of(materia));
+
+        assertThrows(
+                RecursoInactivoException.class,
+                () -> materiaService.actualizarMateria(1L, request)
+        );
+
+        verify(materiaRepository, never()).save(any(Materia.class));
+    }
 }

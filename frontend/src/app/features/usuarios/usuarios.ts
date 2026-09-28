@@ -82,7 +82,7 @@ export class Usuarios implements OnInit {
       nombre: usuario.nombre,
       apellido: usuario.apellido,
       legajo: usuario.legajo,
-      dni: '',
+      dni: usuario.dni,
       email: usuario.email,
       password: '',
       rol: usuario.rol,

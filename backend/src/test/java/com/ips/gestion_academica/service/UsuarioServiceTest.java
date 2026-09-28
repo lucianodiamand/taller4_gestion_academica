@@ -9,8 +9,10 @@ import com.ips.gestion_academica.model.Rol;
 import com.ips.gestion_academica.model.Usuario;
 import com.ips.gestion_academica.repository.UsuarioRepository;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
@@ -29,8 +31,16 @@ class UsuarioServiceTest {
     @Mock
     private UsuarioRepository usuarioRepository;
 
+    @Mock
+    private BCryptPasswordEncoder passwordEncoder;
+
     @InjectMocks
     private UsuarioService usuarioService;
+
+    @BeforeEach
+    void setUp() {
+        lenient().when(passwordEncoder.encode(anyString())).thenAnswer(invocation -> invocation.getArgument(0));
+    }
 
     private UsuarioRequest crearRequestValido() {
         UsuarioRequest request = new UsuarioRequest();
@@ -86,6 +96,7 @@ class UsuarioServiceTest {
         assertEquals(1L, response.getId());
         assertEquals("Sofia", response.getNombre());
         assertEquals("Danieli", response.getApellido());
+        assertEquals("40111222", response.getDni());
         assertEquals("sofia@mail.com", response.getEmail());
         assertEquals("A123", response.getLegajo());
 
