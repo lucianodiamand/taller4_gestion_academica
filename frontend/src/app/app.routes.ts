@@ -21,6 +21,12 @@ export const routes: Routes = [
       import('./features/usuarios/usuarios').then((m) => m.Usuarios),
   },
   {
+    path: 'cursos',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/cursos/cursos').then((m) => m.Cursos),
+  },
+  {
     path: '**',
     redirectTo: '',
   },

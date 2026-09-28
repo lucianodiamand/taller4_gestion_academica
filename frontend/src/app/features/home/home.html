@@ -6,20 +6,34 @@
       <p class="home-role">Rol: {{ authService.usuario()?.rol }}</p>
     </div>
 
-    @if (authService.tienePermiso([Rol.ADMIN])) {
-      <a routerLink="/usuarios">
-        Gestión de usuarios
-      </a>
-    }
-
-    <button class="home-logout" type="button" (click)="authService.logout()">
-      Cerrar sesión
-    </button>
+    <div class="home-actions">
+      <button class="home-logout" type="button" (click)="authService.logout()">
+        Cerrar sesión
+      </button>
+    </div>
   </header>
 
-  <p class="home-note">
-    Esta pantalla es un placeholder para verificar que el login, el guard
-    y el interceptor de JWT funcionan de punta a punta. Cada equipo puede
-    reemplazarla por su propia sección (ABM Materias, Cursos, etc.).
-  </p>
+  <main class="home-main">
+    <h2 class="home-section-title">Módulos disponibles</h2>
+
+    <div class="home-grid">
+      @if (authService.tienePermiso([Rol.ADMIN])) {
+        <a routerLink="/usuarios" class="home-card">
+          <div class="card-icon">👥</div>
+          <div class="card-content">
+            <h3 class="card-title">Gestión de usuarios</h3>
+            <p class="card-desc">Alta, edición y baja de alumnos, profesores y administradores.</p>
+          </div>
+        </a>
+      }
+
+      <a routerLink="/cursos" class="home-card">
+        <div class="card-icon">📚</div>
+        <div class="card-content">
+          <h3 class="card-title">Gestión de cursos</h3>
+          <p class="card-desc">Consulta y administración de comisiones, materias y profesores.</p>
+        </div>
+      </a>
+    </div>
+  </main>
 </div>

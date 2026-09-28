@@ -1,0 +1,168 @@
+<div class="cursos-page">
+  <div class="cursos-nav">
+    <a routerLink="/" class="back-link">← Volver al inicio</a>
+  </div>
+
+  <header class="cursos-header">
+    <div>
+      <h1 class="cursos-title">Gestión de cursos</h1>
+      <p class="cursos-subtitle">Administración de comisiones, materias y docentes asignados</p>
+    </div>
+    @if (puedeGestionar) {
+      <button class="btn btn-primary" type="button" (click)="abrirFormularioCrear()">
+        + Nuevo curso
+      </button>
+    }
+  </header>
+
+  @if (error()) {
+    <p class="alert" role="alert">{{ error() }}</p>
+  }
+
+  @if (cargando()) {
+    <p class="cursos-loading">Cargando cursos…</p>
+  } @else {
+    <div class="table-container">
+      <table class="cursos-table">
+        <thead>
+          <tr>
+            <th>Materia</th>
+            <th>Comisión</th>
+            <th>Período</th>
+            <th>Docente a cargo</th>
+            <th>Estado</th>
+            @if (puedeGestionar) {
+              <th>Acciones</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (curso of cursos(); track curso.id) {
+            <tr>
+              <td>
+                <strong>{{ curso.materia.nombre }}</strong>
+                <span class="materia-codigo">({{ curso.materia.codigo }})</span>
+              </td>
+              <td><span class="badge-comision">{{ curso.comision }}</span></td>
+              <td>{{ curso.anio }} - {{ curso.cuatrimestre }}º Cuatrimestre</td>
+              <td>{{ curso.profesor.nombre }} {{ curso.profesor.apellido }}</td>
+              <td>
+                <span [class]="curso.activo ? 'badge-activo' : 'badge-inactivo'">
+                  {{ curso.activo ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              @if (puedeGestionar) {
+                <td class="cursos-acciones">
+                  <button class="btn btn-link" type="button" (click)="abrirFormularioEditar(curso)">
+                    Editar
+                  </button>
+                  @if (curso.activo) {
+                    <button class="btn btn-link btn-danger" type="button" (click)="eliminar(curso)">
+                      Dar de baja
+                    </button>
+                  }
+                </td>
+              }
+            </tr>
+          } @empty {
+            <tr>
+              <td [attr.colspan]="puedeGestionar ? 6 : 5" class="cursos-vacio">
+                No hay cursos cargados todavía.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (modo()) {
+    <div class="modal-overlay" (click)="cerrarFormulario()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <h2 class="modal-title">
+          {{ modo() === 'crear' ? 'Nuevo curso' : 'Editar curso' }}
+        </h2>
+
+        <form class="curso-form" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+          <label class="form-field">
+            <span class="form-label">Materia</span>
+            <select class="form-input" formControlName="materiaId">
+              <option [ngValue]="null" disabled>-- Seleccioná una materia --</option>
+              @for (materia of materias(); track materia.id) {
+                <option [ngValue]="materia.id">
+                  {{ materia.nombre }} ({{ materia.codigo }})
+                </option>
+              }
+            </select>
+            @if (form.controls.materiaId.touched && form.controls.materiaId.invalid) {
+              <span class="form-error">Debés seleccionar una materia</span>
+            }
+            @if (materias().length === 0) {
+              <span class="form-hint">No hay materias disponibles en el sistema.</span>
+            }
+          </label>
+
+          <label class="form-field">
+            <span class="form-label">Docente</span>
+            <select class="form-input" formControlName="profesorId">
+              <option [ngValue]="null" disabled>-- Seleccioná un docente --</option>
+              @for (profesor of profesores(); track profesor.id) {
+                <option [ngValue]="profesor.id">
+                  {{ profesor.nombre }} {{ profesor.apellido }} (Legajo: {{ profesor.legajo }})
+                </option>
+              }
+            </select>
+            @if (form.controls.profesorId.touched && form.controls.profesorId.invalid) {
+              <span class="form-error">Debés seleccionar un docente</span>
+            }
+            @if (profesores().length === 0) {
+              <span class="form-hint">No hay docentes registrados en el sistema.</span>
+            }
+          </label>
+
+          <div class="form-row">
+            <label class="form-field">
+              <span class="form-label">Año</span>
+              <input class="form-input" type="number" formControlName="anio" placeholder="Ej: 2026" />
+              @if (form.controls.anio.touched && form.controls.anio.invalid) {
+                <span class="form-error">Año inválido</span>
+              }
+            </label>
+
+            <label class="form-field">
+              <span class="form-label">Cuatrimestre</span>
+              <select class="form-input" formControlName="cuatrimestre">
+                <option [ngValue]="1">1º Cuatrimestre</option>
+                <option [ngValue]="2">2º Cuatrimestre</option>
+              </select>
+              @if (form.controls.cuatrimestre.touched && form.controls.cuatrimestre.invalid) {
+                <span class="form-error">Requerido</span>
+              }
+            </label>
+          </div>
+
+          <label class="form-field">
+            <span class="form-label">Comisión</span>
+            <input class="form-input" type="text" formControlName="comision" placeholder="Ej: Comisión 1 / Turno Mañana" />
+            @if (form.controls.comision.touched && form.controls.comision.invalid) {
+              <span class="form-error">Requerido</span>
+            }
+          </label>
+
+          @if (errorFormulario()) {
+            <p class="alert" role="alert">{{ errorFormulario() }}</p>
+          }
+
+          <div class="modal-actions">
+            <button class="btn btn-secondary" type="button" (click)="cerrarFormulario()">
+              Cancelar
+            </button>
+            <button class="btn btn-primary" type="submit" [disabled]="guardando()">
+              {{ guardando() ? 'Guardando…' : 'Guardar curso' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>

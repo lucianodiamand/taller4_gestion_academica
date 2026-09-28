@@ -1,6 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 
 import { Rol } from '../../core/models/auth.model';
 import { Usuario, UsuarioRequest, UsuarioService } from '../../core/services/usuario.service';
@@ -10,7 +11,7 @@ type ModoFormulario = 'crear' | 'editar' | null;
 @Component({
   selector: 'app-usuarios',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './usuarios.html',
   styleUrl: './usuarios.css',
 })

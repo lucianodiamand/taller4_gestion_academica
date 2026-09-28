@@ -5,6 +5,8 @@
   --color-accent-ink: #7a5f0f;
   --color-border: #e3e6ec;
   --color-danger: #b3261e;
+  --color-success: #1b7a3e;
+  --color-success-bg: rgba(27, 122, 62, 0.12);
 
   display: block;
   padding: 2rem;
@@ -12,7 +14,7 @@
   color: var(--color-ink);
 }
 
-.usuarios-nav {
+.cursos-nav {
   margin-bottom: 1.25rem;
 }
 
@@ -31,7 +33,7 @@
   color: var(--color-ink);
 }
 
-.usuarios-header {
+.cursos-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -40,38 +42,43 @@
   margin-bottom: 1.5rem;
 }
 
-.usuarios-title {
+.cursos-title {
   margin: 0 0 0.25rem;
   font-size: 1.5rem;
+  font-weight: 700;
 }
 
-.usuarios-subtitle {
+.cursos-subtitle {
   margin: 0;
   color: var(--color-muted);
+  font-size: 0.95rem;
 }
 
-.usuarios-loading {
+.cursos-loading {
   color: var(--color-muted);
 }
 
-.usuarios-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: #fff;
-  border: 1px solid var(--color-border);
+.table-container {
+  overflow-x: auto;
   border-radius: 0.6rem;
-  overflow: hidden;
+  border: 1px solid var(--color-border);
+  background: #fff;
 }
 
-.usuarios-table th,
-.usuarios-table td {
+.cursos-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.cursos-table th,
+.cursos-table td {
   text-align: left;
-  padding: 0.7rem 0.9rem;
+  padding: 0.8rem 1rem;
   border-bottom: 1px solid var(--color-border);
   font-size: 0.9rem;
 }
 
-.usuarios-table th {
+.cursos-table th {
   background: #f6f7f9;
   font-weight: 600;
   color: var(--color-muted);
@@ -80,24 +87,54 @@
   letter-spacing: 0.03em;
 }
 
-.usuarios-vacio {
-  text-align: center;
-  color: var(--color-muted);
-  padding: 1.5rem;
+.cursos-table tbody tr:last-child td {
+  border-bottom: none;
 }
 
-.rol-badge {
-  font-size: 0.72rem;
+.cursos-table tbody tr:hover {
+  background-color: #fafbfd;
+}
+
+.materia-codigo {
+  margin-left: 0.35rem;
+  color: var(--color-muted);
+  font-size: 0.82rem;
+}
+
+.cursos-vacio {
+  text-align: center;
+  color: var(--color-muted);
+  padding: 2rem !important;
+}
+
+.badge-comision {
+  font-size: 0.78rem;
   font-weight: 600;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  color: var(--color-accent-ink);
-  background: rgba(201, 162, 39, 0.12);
+  color: var(--color-ink);
+  background: #edf0f5;
+  border-radius: 6px;
+  padding: 0.2rem 0.5rem;
+}
+
+.badge-activo,
+.badge-inactivo {
+  font-size: 0.75rem;
+  font-weight: 600;
   border-radius: 999px;
   padding: 0.2rem 0.6rem;
 }
 
-.usuarios-acciones {
+.badge-activo {
+  color: var(--color-success);
+  background: var(--color-success-bg);
+}
+
+.badge-inactivo {
+  color: var(--color-danger);
+  background: rgba(179, 38, 30, 0.1);
+}
+
+.cursos-acciones {
   display: flex;
   gap: 0.75rem;
 }
@@ -110,6 +147,7 @@
   border: none;
   font-weight: 600;
   font-size: 0.85rem;
+  transition: all 0.15s ease;
 }
 
 .btn-primary {
@@ -132,11 +170,18 @@
   border: 1.5px solid var(--color-border);
 }
 
+.btn-secondary:hover {
+  background: #f6f7f9;
+}
+
 .btn-link {
   background: none;
   padding: 0.2rem 0;
   color: var(--color-accent-ink);
-  font-size: 0.85rem;
+}
+
+.btn-link:hover {
+  text-decoration: underline;
 }
 
 .btn-danger {
@@ -145,7 +190,7 @@
 
 .alert {
   margin: 0 0 1rem;
-  padding: 0.6rem 0.85rem;
+  padding: 0.65rem 0.9rem;
   border-radius: 0.5rem;
   background: rgba(179, 38, 30, 0.08);
   color: var(--color-danger);
@@ -165,21 +210,23 @@
 
 .modal {
   width: 100%;
-  max-width: 480px;
+  max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
   background: #fff;
   border-radius: 0.9rem;
   padding: 1.75rem;
   box-sizing: border-box;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
 }
 
 .modal-title {
   margin: 0 0 1.25rem;
-  font-size: 1.2rem;
+  font-size: 1.25rem;
+  font-weight: 700;
 }
 
-.usuario-form {
+.curso-form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -201,7 +248,7 @@
 }
 
 .form-label {
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 600;
 }
 
@@ -226,6 +273,11 @@
   color: var(--color-danger);
 }
 
+.form-hint {
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+
 .modal-actions {
   display: flex;
   justify-content: flex-end;
@@ -237,7 +289,6 @@
   :host {
     padding: 1.25rem;
   }
-
   .form-row {
     flex-direction: column;
   }
