@@ -27,6 +27,12 @@ export const routes: Routes = [
       import('./features/cursos/cursos').then((m) => m.Cursos),
   },
   {
+    path: 'examenes',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/examenes/examenes').then((m) => m.Examenes),
+  },
+  {
     path: '**',
     redirectTo: '',
   },

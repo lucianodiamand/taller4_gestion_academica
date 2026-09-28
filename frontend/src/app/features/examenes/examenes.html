@@ -1,0 +1,151 @@
+<div class="examenes-page">
+  <header class="examenes-header">
+    <div>
+      <div class="examenes-nav">
+        <a routerLink="/" class="link-volver">← Volver al inicio</a>
+      </div>
+      <h1 class="examenes-title">Exámenes</h1>
+      <p class="examenes-subtitle">
+        Consulta de fechas y cronograma de exámenes
+        @if (puedeGestionar) {
+          (modo administración activo)
+        }
+      </p>
+    </div>
+
+    @if (puedeGestionar) {
+      <button class="btn btn-primary" type="button" (click)="abrirFormularioCrear()">
+        + Nuevo examen
+      </button>
+    }
+  </header>
+
+  @if (error()) {
+    <p class="alert" role="alert">{{ error() }}</p>
+  }
+
+  @if (cargando()) {
+    <p class="examenes-loading">Cargando exámenes…</p>
+  } @else {
+    <table class="examenes-table">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Tipo</th>
+          <th>Curso</th>
+          <th>Descripción</th>
+          @if (puedeGestionar) {
+            <th>Acciones</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (examen of examenes(); track examen.id) {
+          <tr>
+            <td class="col-fecha">{{ examen.fecha }}</td>
+            <td>
+              <span class="tipo-badge" [attr.data-tipo]="examen.tipo">
+                {{ examen.tipo }}
+              </span>
+            </td>
+            <td>
+              <strong>Comisión {{ examen.curso.comision }}</strong>
+              <span class="curso-detalle">({{ examen.curso.anio }} - Cuatr. {{ examen.curso.cuatrimestre }})</span>
+            </td>
+            <td>{{ examen.descripcion || '-' }}</td>
+            @if (puedeGestionar) {
+              <td class="examenes-acciones">
+                <button class="btn btn-link" type="button" (click)="abrirFormularioEditar(examen)">
+                  Editar
+                </button>
+                <button class="btn btn-link btn-danger" type="button" (click)="eliminar(examen)">
+                  Dar de baja
+                </button>
+              </td>
+            }
+          </tr>
+        } @empty {
+          <tr>
+            <td [attr.colspan]="puedeGestionar ? 5 : 4" class="examenes-vacio">
+              No hay exámenes registrados todavía.
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+
+  @if (modo()) {
+    <div class="modal-overlay" (click)="cerrarFormulario()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <h2 class="modal-title">
+          {{ modo() === 'crear' ? 'Nuevo examen' : 'Editar examen' }}
+        </h2>
+
+        <form class="examen-form" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+          <div class="form-row">
+            <label class="form-field">
+              <span class="form-label">Fecha del examen</span>
+              <input class="form-input" type="date" formControlName="fecha" />
+              @if (form.controls.fecha.touched && form.controls.fecha.invalid) {
+                <span class="form-error">La fecha es requerida</span>
+              }
+            </label>
+
+            <label class="form-field">
+              <span class="form-label">Tipo de examen</span>
+              <select class="form-input" formControlName="tipo">
+                @for (tipo of tiposExamen; track tipo) {
+                  <option [value]="tipo">{{ tipo }}</option>
+                }
+              </select>
+            </label>
+          </div>
+
+          <label class="form-field">
+            <span class="form-label">Curso</span>
+            <select class="form-input" formControlName="cursoId">
+              <option [value]="0" disabled>Seleccioná un curso</option>
+              @for (curso of cursos(); track curso.id) {
+                <option [value]="curso.id">
+                  {{ curso.materia ? curso.materia.nombre + ' - ' : '' }}Comisión {{ curso.comision }} (Año {{ curso.anio }} / C{{ curso.cuatrimestre }})
+                </option>
+              }
+            </select>
+            @if (form.controls.cursoId.touched && form.controls.cursoId.invalid) {
+              <span class="form-error">Debe seleccionar un curso válido</span>
+            }
+          </label>
+
+          <label class="form-field">
+            <span class="form-label">Descripción (opcional)</span>
+            <textarea
+              class="form-input form-textarea"
+              rows="3"
+              placeholder="Ej: Unidades 1 a 4, aula 12..."
+              formControlName="descripcion"
+            ></textarea>
+          </label>
+
+          @if (errorFormulario()) {
+            <p class="alert" role="alert">{{ errorFormulario() }}</p>
+          }
+
+          <div class="modal-actions">
+            <button
+              class="btn btn-secondary"
+              type="button"
+              (click)="cerrarFormulario()"
+              [disabled]="guardando()"
+            >
+              Cancelar
+            </button>
+            <button class="btn btn-primary" type="submit" [disabled]="guardando()">
+              {{ guardando() ? 'Guardando…' : 'Guardar examen' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>
