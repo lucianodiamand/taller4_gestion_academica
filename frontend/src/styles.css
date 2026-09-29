@@ -93,6 +93,15 @@ body {
   background: #e2b52c;
 }
 
+.btn-info {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.btn-info:hover:not(:disabled) {
+  background: #2563eb;
+}
+
 .btn-solid-danger {
   background: var(--color-danger);
   color: #fff;

@@ -12,8 +12,8 @@ public class ExamenResponse {
     private TipoExamen tipo;
     private String descripcion;
     private Boolean activo;
-
     private CursoResumenResponse curso;
+    private String materiaNombre;
 
     public ExamenResponse(
             Long id,
@@ -21,7 +21,8 @@ public class ExamenResponse {
             TipoExamen tipo,
             String descripcion,
             Boolean activo,
-            CursoResumenResponse curso) {
+            CursoResumenResponse curso,
+            String materiaNombre) {
 
         this.id = id;
         this.fecha = fecha;
@@ -29,6 +30,7 @@ public class ExamenResponse {
         this.descripcion = descripcion;
         this.activo = activo;
         this.curso = curso;
+        this.materiaNombre = materiaNombre;
     }
 
     public Long getId() {
@@ -53,5 +55,9 @@ public class ExamenResponse {
 
     public CursoResumenResponse getCurso() {
         return curso;
+    }
+
+    public String getMateriaNombre() {
+        return materiaNombre;
     }
 }

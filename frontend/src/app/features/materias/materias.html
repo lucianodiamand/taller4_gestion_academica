@@ -42,35 +42,26 @@
             Nombre<span class="sort-arrow">{{ sorter.flecha('nombre') }}</span>
           </th>
           <th>Descripción</th>
-          <th>Contenido / Plan de estudio</th>
           <th class="sortable" (click)="sorter.toggle('anioCursada')">
             Año<span class="sort-arrow">{{ sorter.flecha('anioCursada') }}</span>
           </th>
-          <th class="sortable" (click)="sorter.toggle('activo')">
-            Estado<span class="sort-arrow">{{ sorter.flecha('activo') }}</span>
-          </th>
-          @if (puedeGestionar) {
-            <th>Acciones</th>
-          }
+          <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
-        @for (materia of filas(); track materia.id) {
+        @for (materia of filasPaginadas(); track materia.id) {
           <tr>
             <td><span class="codigo-badge">{{ materia.codigo }}</span></td>
             <td>
               <strong>{{ materia.nombre }}</strong>
             </td>
             <td>{{ materia.descripcion || '-' }}</td>
-            <td class="cell-contenido">{{ materia.contenido || '-' }}</td>
             <td>{{ materia.anioCursada }}º año</td>
-            <td>
-              <span [class]="materia.activo ? 'estado-badge estado-activo' : 'estado-badge estado-inactivo'">
-                {{ materia.activo ? 'Activo' : 'Inactivo' }}
-              </span>
-            </td>
-            @if (puedeGestionar) {
-              <td class="row-acciones">
+            <td class="row-acciones">
+              <button class="btn btn-info" type="button" (click)="abrirDetalle(materia)">
+                Ver
+              </button>
+              @if (puedeGestionar) {
                 <button class="btn btn-edit" type="button" (click)="abrirFormularioEditar(materia)">
                   Editar
                 </button>
@@ -79,12 +70,12 @@
                     Dar de baja
                   </button>
                 }
-              </td>
-            }
+              }
+            </td>
           </tr>
         } @empty {
           <tr>
-            <td [attr.colspan]="puedeGestionar ? 7 : 6" class="cell-vacio">
+            <td colspan="5" class="cell-vacio">
               {{
                 materias().length === 0
                   ? 'No hay materias cargadas todavía.'
@@ -95,6 +86,12 @@
         }
       </tbody>
     </table>
+
+    <app-pagination
+      [pagina]="paginaActual()"
+      [totalPaginas]="totalPaginas()"
+      (paginaCambiada)="irPagina($event)"
+    />
   }
 
   @if (modo()) {
@@ -170,6 +167,52 @@
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  }
+
+  @if (materiaDetalle()) {
+    <div class="modal-overlay" (click)="cerrarDetalle()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <h2 class="modal-title">Detalle de la materia</h2>
+
+        <div class="detalle">
+          <div class="detalle-grid">
+            <div class="detalle-item">
+              <span class="detalle-label">Código</span>
+              <span class="detalle-valor">{{ materiaDetalle()!.codigo }}</span>
+            </div>
+            <div class="detalle-item">
+              <span class="detalle-label">Año de cursada</span>
+              <span class="detalle-valor">{{ materiaDetalle()!.anioCursada }}º año</span>
+            </div>
+            <div class="detalle-item">
+              <span class="detalle-label">Estado</span>
+              <span [class]="materiaDetalle()!.activo ? 'estado-badge estado-activo' : 'estado-badge estado-inactivo'">
+                {{ materiaDetalle()!.activo ? 'Activo' : 'Inactivo' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="detalle-item">
+            <span class="detalle-label">Nombre</span>
+            <span class="detalle-valor">{{ materiaDetalle()!.nombre }}</span>
+          </div>
+
+          <div class="detalle-item">
+            <span class="detalle-label">Descripción</span>
+            <p class="detalle-texto">{{ materiaDetalle()!.descripcion || '-' }}</p>
+          </div>
+
+          <div class="detalle-item">
+            <span class="detalle-label">Contenido / Plan de estudio</span>
+            <p class="detalle-texto">{{ materiaDetalle()!.contenido || '-' }}</p>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn btn-secondary" type="button" (click)="cerrarDetalle()">Cerrar</button>
+        </div>
       </div>
     </div>
   }

@@ -170,7 +170,8 @@ public class ExamenService {
                 examen.getTipo(),
                 examen.getDescripcion(),
                 examen.getActivo(),
-                convertirCursoAResumen(examen.getCurso())
+                convertirCursoAResumen(examen.getCurso()),
+                examen.getCurso().getMateria().getNombre()
         );
     }
 

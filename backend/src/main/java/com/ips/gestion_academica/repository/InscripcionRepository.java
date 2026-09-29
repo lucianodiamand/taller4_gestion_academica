@@ -10,6 +10,13 @@ public interface InscripcionRepository
 
     List<Inscripcion> findByActivoTrue();
 
+    List<Inscripcion> findByAlumnoId(Long alumnoId);
+
+    boolean existsByAlumnoIdAndCursoIdAndActivoTrue(
+            Long alumnoId,
+            Long cursoId
+    );
+
     boolean existsByAlumnoIdAndCursoId(
             Long alumnoId,
             Long cursoId

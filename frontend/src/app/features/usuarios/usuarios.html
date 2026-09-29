@@ -52,7 +52,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (usuario of filas(); track usuario.id) {
+        @for (usuario of filasPaginadas(); track usuario.id) {
           <tr>
             <td>{{ usuario.legajo }}</td>
             <td>{{ usuario.nombre }}</td>
@@ -83,6 +83,12 @@
         }
       </tbody>
     </table>
+
+    <app-pagination
+      [pagina]="paginaActual()"
+      [totalPaginas]="totalPaginas()"
+      (paginaCambiada)="irPagina($event)"
+    />
   }
 
   @if (modo()) {

@@ -7,6 +7,7 @@ import com.ips.gestion_academica.exception.RecursoInactivoException;
 import com.ips.gestion_academica.exception.RecursoNoEncontradoException;
 import com.ips.gestion_academica.model.Curso;
 import com.ips.gestion_academica.model.Examen;
+import com.ips.gestion_academica.model.Materia;
 import com.ips.gestion_academica.model.TipoExamen;
 import com.ips.gestion_academica.repository.CursoRepository;
 import com.ips.gestion_academica.repository.ExamenRepository;
@@ -49,11 +50,15 @@ class ExamenServiceTest {
     }
 
     private Curso crearCursoActivo() {
+        Materia materia = new Materia();
+        materia.setNombre("Matematica");
+
         Curso curso = new Curso();
         curso.setId(10L);
         curso.setAnio(2026);
         curso.setCuatrimestre(2);
         curso.setComision("A");
+        curso.setMateria(materia);
         curso.setActivo(true);
 
         return curso;

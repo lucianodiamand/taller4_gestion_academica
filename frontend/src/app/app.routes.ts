@@ -45,6 +45,20 @@ export const routes: Routes = [
       import('./features/perfil/perfil').then((m) => m.Perfil),
   },
   {
+    path: 'inscripciones',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/inscripciones/inscripciones').then((m) => m.Inscripciones),
+  },
+  {
+    path: 'inscripciones-examen',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/inscripciones-examen/inscripciones-examen').then(
+        (m) => m.InscripcionesExamen,
+      ),
+  },
+  {
     path: '**',
     redirectTo: '',
   },

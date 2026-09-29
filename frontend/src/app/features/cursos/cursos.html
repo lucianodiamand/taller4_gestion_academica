@@ -56,7 +56,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (curso of filas(); track curso.id) {
+        @for (curso of filasPaginadas(); track curso.id) {
           <tr>
             <td>
               <strong>{{ curso.materia.nombre }}</strong>
@@ -96,6 +96,12 @@
         }
       </tbody>
     </table>
+
+    <app-pagination
+      [pagina]="paginaActual()"
+      [totalPaginas]="totalPaginas()"
+      (paginaCambiada)="irPagina($event)"
+    />
   }
 
   @if (modo()) {

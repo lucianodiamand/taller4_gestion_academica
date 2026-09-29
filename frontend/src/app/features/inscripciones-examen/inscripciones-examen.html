@@ -1,0 +1,250 @@
+<div class="inscripciones-examen-page">
+  <div class="page-nav">
+    <a routerLink="/" class="back-link">← Volver al inicio</a>
+  </div>
+
+  <header class="page-header">
+    <div>
+      <h1 class="page-title">Inscripciones a examen</h1>
+      <p class="page-subtitle">Mesas de examen: inscripción y carga de notas</p>
+    </div>
+  </header>
+
+  @if (error()) {
+    <p class="alert" role="alert">{{ error() }}</p>
+  }
+
+  <div class="filtro-tabs">
+    <button
+      type="button"
+      [class.activo]="tab() === 'general'"
+      (click)="tab.set('general')"
+    >Lista general</button>
+    <button
+      type="button"
+      [class.activo]="tab() === 'inscritos'"
+      (click)="tab.set('inscritos')"
+    >Inscritos</button>
+    <button
+      type="button"
+      [class.activo]="tab() === 'finalizados'"
+      (click)="tab.set('finalizados')"
+    >Finalizados</button>
+  </div>
+
+  <div class="table-toolbar">
+    <app-search-bar
+      [(termino)]="termino"
+      placeholder="Buscar…"
+    />
+    <span class="table-count">
+      @if (tab() === 'general') {
+        {{ examenesDisponibles().length }} exámenes
+      } @else {
+        {{ filas().length }} inscripciones
+      }
+    </span>
+  </div>
+
+  @if (cargando()) {
+    <p class="page-loading">Cargando…</p>
+  } @else if (tab() === 'general') {
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Materia</th>
+          <th>Tipo</th>
+          <th>Fecha</th>
+          <th>Curso</th>
+          @if (puedeCrear) {
+            <th>Acciones</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (examen of examenesDisponibles(); track examen.id) {
+          <tr>
+            <td><strong>{{ examen.materiaNombre }}</strong></td>
+            <td>{{ examen.tipo }}</td>
+            <td>{{ examen.fecha }}</td>
+            <td>
+              Comisión {{ examen.curso.comision }}
+              ({{ examen.curso.anio }} / C{{ examen.curso.cuatrimestre }})
+            </td>
+            @if (puedeCrear) {
+              <td>
+                <button class="btn btn-info" type="button" (click)="anotarse(examen)">
+                  Anotarse
+                </button>
+              </td>
+            }
+          </tr>
+        } @empty {
+          <tr>
+            <td [attr.colspan]="puedeCrear ? 5 : 4" class="cell-vacio">
+              @if (examenes().length === 0) {
+                No hay exámenes próximos disponibles.
+              } @else if (termino()) {
+                No hay resultados para tu búsqueda.
+              } @else {
+                Ya estás inscripto en todos los exámenes disponibles.
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  } @else {
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th class="sortable" (click)="sorter.toggle('alumno.apellido')">
+            Alumno<span class="sort-arrow">{{ sorter.flecha('alumno.apellido') }}</span>
+          </th>
+          <th class="sortable" (click)="sorter.toggle('alumno.legajo')">
+            Legajo<span class="sort-arrow">{{ sorter.flecha('alumno.legajo') }}</span>
+          </th>
+          <th class="sortable" (click)="sorter.toggle('examen.fecha')">
+            Examen<span class="sort-arrow">{{ sorter.flecha('examen.fecha') }}</span>
+          </th>
+          <th class="sortable" (click)="sorter.toggle('nota')">
+            Nota<span class="sort-arrow">{{ sorter.flecha('nota') }}</span>
+          </th>
+          @if (mostrarAcciones()) {
+            <th>Acciones</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (inscripcion of filasPaginadas(); track inscripcion.id) {
+          <tr>
+            <td>
+              <strong>{{ inscripcion.alumno.nombre }} {{ inscripcion.alumno.apellido }}</strong>
+            </td>
+            <td>{{ inscripcion.alumno.legajo }}</td>
+            <td>
+              <strong>{{ inscripcion.examen.materiaNombre }}</strong>
+              <span class="examen-detalle">
+                {{ inscripcion.examen.tipo }} · {{ inscripcion.examen.fecha }} · Comisión {{ inscripcion.examen.curso.comision }}
+                ({{ inscripcion.examen.curso.anio }} / C{{ inscripcion.examen.curso.cuatrimestre }})
+              </span>
+            </td>
+            <td>
+              @if (inscripcion.nota !== null) {
+                <span class="nota-badge">{{ inscripcion.nota }}</span>
+              } @else {
+                <span class="nota-sin">Sin nota</span>
+              }
+            </td>
+            @if (mostrarAcciones()) {
+              <td class="row-acciones">
+                @if (puedeCargarNota && !esFechaFutura(inscripcion.examen.fecha)) {
+                  <button class="btn btn-info" type="button" (click)="abrirFormularioNota(inscripcion)">
+                    {{ inscripcion.nota !== null ? 'Editar nota' : 'Cargar nota' }}
+                  </button>
+                }
+                @if (puedeCancelar && inscripcion.nota === null && !esFechaPasada(inscripcion.examen.fecha)) {
+                  <button class="btn btn-solid-danger" type="button" (click)="cancelar(inscripcion)">
+                    Cancelar
+                  </button>
+                }
+              </td>
+            }
+          </tr>
+        } @empty {
+          <tr>
+            <td [attr.colspan]="mostrarAcciones() ? 5 : 4" class="cell-vacio">
+              {{
+                inscripciones().length === 0
+                  ? 'No hay inscripciones a examen todavía.'
+                  : 'No hay resultados para tu búsqueda.'
+              }}
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <app-pagination
+      [pagina]="paginaActual()"
+      [totalPaginas]="totalPaginas()"
+      (paginaCambiada)="irPagina($event)"
+    />
+  }
+
+  @if (modo() === 'crear') {
+    <div class="modal-overlay" (click)="cerrarFormulario()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <h2 class="modal-title">Anotar alumno a examen</h2>
+
+        <form class="form" [formGroup]="form" (ngSubmit)="confirmarAnotarse()" novalidate>
+          <label class="form-field">
+            <span class="form-label">Alumno</span>
+            <select class="form-input" formControlName="alumnoId">
+              <option [ngValue]="null" disabled>-- Seleccioná un alumno --</option>
+              @for (alumno of alumnos(); track alumno.id) {
+                <option [ngValue]="alumno.id">
+                  {{ alumno.nombre }} {{ alumno.apellido }} (Legajo: {{ alumno.legajo }})
+                </option>
+              }
+            </select>
+            @if (form.controls.alumnoId.touched && form.controls.alumnoId.invalid) {
+              <span class="form-error">Debés seleccionar un alumno</span>
+            }
+          </label>
+
+          @if (errorFormulario()) {
+            <p class="alert" role="alert">{{ errorFormulario() }}</p>
+          }
+
+          <div class="modal-actions">
+            <button class="btn btn-secondary" type="button" (click)="cerrarFormulario()">
+              Cancelar
+            </button>
+            <button class="btn btn-primary" type="submit" [disabled]="guardando()">
+              {{ guardando() ? 'Guardando…' : 'Anotar' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  @if (modo() === 'nota') {
+    <div class="modal-overlay" (click)="cerrarFormulario()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <h2 class="modal-title">Cargar nota</h2>
+
+        <form class="form" [formGroup]="notaForm" (ngSubmit)="guardarNota()" novalidate>
+          <label class="form-field">
+            <span class="form-label">Nota (1 a 10)</span>
+            <input
+              class="form-input"
+              type="number"
+              min="1"
+              max="10"
+              formControlName="nota"
+              placeholder="Ej: 8"
+            />
+            @if (notaForm.controls.nota.touched && notaForm.controls.nota.invalid) {
+              <span class="form-error">Ingresá una nota entre 1 y 10</span>
+            }
+          </label>
+
+          @if (errorFormulario()) {
+            <p class="alert" role="alert">{{ errorFormulario() }}</p>
+          }
+
+          <div class="modal-actions">
+            <button class="btn btn-secondary" type="button" (click)="cerrarFormulario()">
+              Cancelar
+            </button>
+            <button class="btn btn-primary" type="submit" [disabled]="guardando()">
+              {{ guardando() ? 'Guardando…' : 'Guardar nota' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>

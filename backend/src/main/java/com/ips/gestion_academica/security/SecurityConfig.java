@@ -72,11 +72,18 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/inscripciones").hasAnyRole("ADMIN", "ALUMNO")
                 .requestMatchers(HttpMethod.PUT, "/api/inscripciones/*/estado").hasAnyRole("ADMIN", "PROFESOR")
                 .requestMatchers(HttpMethod.DELETE, "/api/inscripciones/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/inscripciones/mias").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/inscripciones/**").hasAnyRole("ADMIN", "PROFESOR")
 
                 // Examenes: todos los logueados pueden consultar, la gestion es de ADMIN y PROFESOR
                 .requestMatchers(HttpMethod.GET, "/api/examenes/**").authenticated()
                 .requestMatchers("/api/examenes/**").hasAnyRole("ADMIN", "PROFESOR")
+
+                // Inscripciones a examen (mesas)
+                .requestMatchers(HttpMethod.POST, "/api/inscripciones-examen").hasAnyRole("ADMIN", "ALUMNO")
+                .requestMatchers(HttpMethod.PUT, "/api/inscripciones-examen/*/nota").hasAnyRole("ADMIN", "PROFESOR")
+                .requestMatchers(HttpMethod.DELETE, "/api/inscripciones-examen/**").hasAnyRole("ADMIN", "ALUMNO")
+                .requestMatchers(HttpMethod.GET, "/api/inscripciones-examen/**").hasAnyRole("ADMIN", "PROFESOR", "ALUMNO")
 
                 .anyRequest().authenticated()
             )

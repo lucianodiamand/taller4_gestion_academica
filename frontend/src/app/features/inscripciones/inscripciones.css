@@ -1,0 +1,53 @@
+:host {
+  display: block;
+  padding: 2rem;
+}
+
+.col-fecha {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.curso-comision {
+  color: var(--color-muted);
+  font-size: 0.85rem;
+}
+
+.estado-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  padding: 0.25rem 0.65rem;
+  display: inline-block;
+  white-space: nowrap;
+  background: #eef2f6;
+  color: var(--color-muted);
+}
+
+.estado-badge[data-estado='INSCRIPTO'] {
+  background: rgba(30, 100, 220, 0.12);
+  color: #1a56b2;
+}
+
+.estado-badge[data-estado='REGULAR'] {
+  background: rgba(201, 162, 39, 0.15);
+  color: #7a5f0f;
+}
+
+.estado-badge[data-estado='APROBADO'] {
+  background: rgba(27, 122, 62, 0.12);
+  color: #1b7a3e;
+}
+
+.estado-badge[data-estado='DESAPROBADO'] {
+  background: rgba(180, 40, 40, 0.12);
+  color: #a82020;
+}
+
+@media (max-width: 560px) {
+  :host {
+    padding: 1.25rem;
+  }
+}

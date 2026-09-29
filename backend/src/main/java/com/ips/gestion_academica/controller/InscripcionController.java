@@ -28,6 +28,13 @@ public class InscripcionController {
         );
     }
 
+    @GetMapping("/mias")
+    public ResponseEntity<List<InscripcionResponse>> listarMias() {
+        return ResponseEntity.ok(
+                inscripcionService.listarMias()
+        );
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<InscripcionResponse> buscarPorId(
             @PathVariable Long id) {

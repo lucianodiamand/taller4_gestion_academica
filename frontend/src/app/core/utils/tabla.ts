@@ -102,3 +102,21 @@ function comparar(a: unknown, b: unknown): number {
   const sb = aTexto(b).toLowerCase();
   return sa.localeCompare(sb, 'es', { numeric: true });
 }
+
+// estado de paginacion de una tabla
+export class Paginator {
+  readonly pagina = signal(0);
+  readonly tamanoPagina = signal(10);
+
+  reset(): void {
+    this.pagina.set(0);
+  }
+
+  totalPaginas(total: number): number {
+    return Math.max(1, Math.ceil(total / this.tamanoPagina()));
+  }
+
+  paginaActual(total: number): number {
+    return Math.min(this.pagina(), this.totalPaginas(total) - 1);
+  }
+}

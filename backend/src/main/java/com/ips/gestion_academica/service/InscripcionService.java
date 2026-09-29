@@ -111,6 +111,17 @@ public class InscripcionService {
                 .toList();
     }
 
+    public List<InscripcionResponse> listarMias() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String legajo = (String) auth.getPrincipal();
+        Usuario usuario = usuarioRepository.findByLegajo(legajo)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario", null));
+        return inscripcionRepository.findByAlumnoId(usuario.getId()).stream()
+                .filter(Inscripcion::getActivo)
+                .map(this::convertirAResponse)
+                .toList();
+    }
+
     public InscripcionResponse buscarPorId(Long id) {
         Inscripcion inscripcion = inscripcionRepository.findById(id)
                 .orElseThrow(() ->

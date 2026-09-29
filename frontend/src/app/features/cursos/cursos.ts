@@ -4,19 +4,20 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
 import { SearchBar } from '../../core/components/search-bar/search-bar';
+import { Pagination } from '../../core/components/pagination/pagination';
 import { Rol } from '../../core/models/auth.model';
 import { AuthService } from '../../core/services/auth.service';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { Curso, CursoMateria, CursoRequest, CursoService } from '../../core/services/curso.service';
 import { Usuario, UsuarioService } from '../../core/services/usuario.service';
-import { TableSorter, filtrar } from '../../core/utils/tabla';
+import { Paginator, TableSorter, filtrar } from '../../core/utils/tabla';
 
 type ModoFormulario = 'crear' | 'editar' | null;
 
 @Component({
   selector: 'app-cursos',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, SearchBar],
+  imports: [ReactiveFormsModule, RouterLink, SearchBar, Pagination],
   templateUrl: './cursos.html',
   styleUrl: './cursos.css',
 })
@@ -39,9 +40,24 @@ export class Cursos implements OnInit {
 
   protected readonly termino = signal('');
   protected readonly sorter = new TableSorter();
+  protected readonly paginator = new Paginator();
   protected readonly filas = computed(() =>
     this.sorter.ordenar(filtrar(this.cursos(), this.termino())),
   );
+  protected readonly totalPaginas = computed(() =>
+    this.paginator.totalPaginas(this.filas().length),
+  );
+  protected readonly paginaActual = computed(() =>
+    this.paginator.paginaActual(this.filas().length),
+  );
+  protected readonly filasPaginadas = computed(() => {
+    const inicio = this.paginaActual() * this.paginator.tamanoPagina();
+    return this.filas().slice(inicio, inicio + this.paginator.tamanoPagina());
+  });
+
+  protected irPagina(pagina: number): void {
+    this.paginator.pagina.set(pagina);
+  }
 
   protected readonly modo = signal<ModoFormulario>(null);
   protected readonly guardando = signal(false);

@@ -22,6 +22,7 @@ export interface Examen {
   descripcion: string;
   activo: boolean;
   curso: CursoResumen;
+  materiaNombre: string;
 }
 
 export interface ExamenRequest {

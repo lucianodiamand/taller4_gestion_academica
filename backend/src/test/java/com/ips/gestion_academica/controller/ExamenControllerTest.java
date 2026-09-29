@@ -49,7 +49,8 @@ class ExamenControllerTest {
                 TipoExamen.PARCIAL,
                 "Primer Parcial",
                 true,
-                cursoResumen
+                cursoResumen,
+                "Matematica"
         );
     }
 
