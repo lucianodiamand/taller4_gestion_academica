@@ -51,7 +51,12 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
 
-                // Usuarios: recurso sensible, solo ADMIN puede listar/crear/modificar/dar de baja
+                // Usuarios: recurso sensible, solo ADMIN puede listar/crear/modificar/dar de baja.
+                // Excepcion: cualquier usuario logueado puede ver/editar SU PROPIO perfil
+                // y cambiar SU PROPIA contrasena (nunca la de otro usuario).
+                .requestMatchers(HttpMethod.GET, "/api/usuarios/me").authenticated()
+                .requestMatchers(HttpMethod.PUT, "/api/usuarios/me").authenticated()
+                .requestMatchers(HttpMethod.PUT, "/api/usuarios/me/password").authenticated()
                 .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
 
                 // Materias: todos los logueados pueden consultar, el ABM es solo de ADMIN

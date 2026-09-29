@@ -26,6 +26,17 @@ export interface UsuarioRequest {
   rol: Rol;
 }
 
+export interface CambiarPasswordRequest {
+  passwordActual: string;
+  passwordNueva: string;
+}
+
+export interface ActualizarPerfilRequest {
+  nombre: string;
+  apellido: string;
+  email: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class UsuarioService {
   private readonly apiUrl = '/api/usuarios';
@@ -46,5 +57,17 @@ export class UsuarioService {
 
   eliminar(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  cambiarPassword(request: CambiarPasswordRequest): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/me/password`, request);
+  }
+
+  obtenerMiPerfil(): Observable<Usuario> {
+    return this.http.get<Usuario>(`${this.apiUrl}/me`);
+  }
+
+  actualizarMiPerfil(request: ActualizarPerfilRequest): Observable<Usuario> {
+    return this.http.put<Usuario>(`${this.apiUrl}/me`, request);
   }
 }

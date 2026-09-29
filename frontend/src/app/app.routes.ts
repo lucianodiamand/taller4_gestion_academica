@@ -33,6 +33,12 @@ export const routes: Routes = [
       import('./features/examenes/examenes').then((m) => m.Examenes),
   },
   {
+    path: 'perfil',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/perfil/perfil').then((m) => m.Perfil),
+  },
+  {
     path: '**',
     redirectTo: '',
   },

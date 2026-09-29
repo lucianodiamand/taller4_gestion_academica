@@ -1,7 +1,10 @@
 package com.ips.gestion_academica.service;
 
+import com.ips.gestion_academica.dto.usuario.ActualizarPerfilRequest;
+import com.ips.gestion_academica.dto.usuario.CambiarPasswordRequest;
 import com.ips.gestion_academica.dto.usuario.UsuarioRequest;
 import com.ips.gestion_academica.dto.usuario.UsuarioResponse;
+import com.ips.gestion_academica.exception.CredencialesInvalidasException;
 import com.ips.gestion_academica.exception.RecursoDuplicadoException;
 import com.ips.gestion_academica.exception.RecursoNoEncontradoException;
 import com.ips.gestion_academica.exception.RecursoInactivoException;
@@ -137,5 +140,54 @@ public class UsuarioService {
         }
         usuario.setActivo(false);
         usuarioRepository.save(usuario);
+    }
+
+    /**
+     * Cambia la contrasena del usuario logueado (identificado por su legajo,
+     * tomado del token). No requiere ID por ruta: nunca se puede cambiar
+     * la contrasena de otro usuario por esta via.
+     */
+    public void cambiarPassword(String legajo, CambiarPasswordRequest request) {
+        Usuario usuario = usuarioRepository.findByLegajo(legajo)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario", null));
+
+        if (!passwordEncoder.matches(request.getPasswordActual(), usuario.getPassword())) {
+            throw new CredencialesInvalidasException();
+        }
+
+        usuario.setPassword(passwordEncoder.encode(request.getPasswordNueva()));
+        usuarioRepository.save(usuario);
+    }
+
+    /** Datos del propio perfil (identificado por el legajo del token). */
+    public UsuarioResponse obtenerPerfil(String legajo) {
+        Usuario usuario = usuarioRepository.findByLegajo(legajo)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario", null));
+
+        return convertirAResponse(usuario);
+    }
+
+    /**
+     * Actualiza nombre/apellido/email del propio perfil. A proposito NO
+     * permite tocar legajo, dni ni rol desde aca: esos son datos de
+     * identidad/permisos que solo un ADMIN puede cambiar (via PUT /{id}).
+     */
+    public UsuarioResponse actualizarPerfil(String legajo, ActualizarPerfilRequest request) {
+        Usuario usuario = usuarioRepository.findByLegajo(legajo)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario", null));
+
+        if (usuarioRepository.existsByEmailAndIdNot(request.getEmail(), usuario.getId())) {
+            throw new RecursoDuplicadoException(
+                "Ya existe un usuario con ese email " + request.getEmail()
+            );
+        }
+
+        usuario.setNombre(request.getNombre());
+        usuario.setApellido(request.getApellido());
+        usuario.setEmail(request.getEmail());
+
+        Usuario usuarioGuardado = usuarioRepository.save(usuario);
+
+        return convertirAResponse(usuarioGuardado);
     }
 }
