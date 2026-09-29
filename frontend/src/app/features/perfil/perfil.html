@@ -1,0 +1,111 @@
+<div class="perfil-page">
+  <a routerLink="/" class="back-link">← Volver al inicio</a>
+
+  <header class="perfil-header">
+    <h1 class="perfil-title">Mi perfil</h1>
+    <p class="perfil-subtitle">
+      Legajo {{ authService.usuario()?.legajo }} · {{ authService.usuario()?.rol }}
+    </p>
+  </header>
+
+  @if (cargando()) {
+    <p class="perfil-loading">Cargando tus datos…</p>
+  } @else if (errorCarga()) {
+    <p class="alert alert-error" role="alert">{{ errorCarga() }}</p>
+  } @else {
+    <div class="perfil-grid">
+
+      <section class="perfil-card">
+        <h2 class="perfil-card-title">Mis datos</h2>
+
+        <form class="perfil-form" [formGroup]="datosForm" (ngSubmit)="guardarDatos()" novalidate>
+          <label class="form-field">
+            <span class="form-label">Nombre</span>
+            <input class="form-input" type="text" formControlName="nombre" />
+            @if (datosForm.controls.nombre.touched && datosForm.controls.nombre.invalid) {
+              <span class="form-error">Requerido</span>
+            }
+          </label>
+
+          <label class="form-field">
+            <span class="form-label">Apellido</span>
+            <input class="form-input" type="text" formControlName="apellido" />
+            @if (datosForm.controls.apellido.touched && datosForm.controls.apellido.invalid) {
+              <span class="form-error">Requerido</span>
+            }
+          </label>
+
+          <label class="form-field">
+            <span class="form-label">Email</span>
+            <input class="form-input" type="email" formControlName="email" />
+            @if (datosForm.controls.email.touched && datosForm.controls.email.invalid) {
+              <span class="form-error">Ingresá un email válido</span>
+            }
+          </label>
+
+          <div class="form-field form-field-readonly">
+            <span class="form-label">Legajo, DNI y rol</span>
+            <p class="form-readonly-note">
+              No se pueden editar desde acá. Si necesitás cambiarlos, pedile a un administrador.
+            </p>
+          </div>
+
+          @if (errorDatos()) {
+            <p class="alert alert-error" role="alert">{{ errorDatos() }}</p>
+          }
+
+          @if (exitoDatos()) {
+            <p class="alert alert-exito" role="status">Datos actualizados correctamente.</p>
+          }
+
+          <button class="btn btn-primary" type="submit" [disabled]="guardandoDatos()">
+            {{ guardandoDatos() ? 'Guardando…' : 'Guardar datos' }}
+          </button>
+        </form>
+      </section>
+
+      <section class="perfil-card">
+        <h2 class="perfil-card-title">Cambiar contraseña</h2>
+
+        <form class="perfil-form" [formGroup]="passwordForm" (ngSubmit)="guardarPassword()" novalidate>
+          <label class="form-field">
+            <span class="form-label">Contraseña actual</span>
+            <input class="form-input" type="password" formControlName="passwordActual" autocomplete="current-password" />
+            @if (passwordForm.controls.passwordActual.touched && passwordForm.controls.passwordActual.invalid) {
+              <span class="form-error">Requerido</span>
+            }
+          </label>
+
+          <label class="form-field">
+            <span class="form-label">Nueva contraseña</span>
+            <input class="form-input" type="password" formControlName="passwordNueva" autocomplete="new-password" />
+            @if (passwordForm.controls.passwordNueva.touched && passwordForm.controls.passwordNueva.invalid) {
+              <span class="form-error">Debe tener al menos 6 caracteres</span>
+            }
+          </label>
+
+          <label class="form-field">
+            <span class="form-label">Repetir nueva contraseña</span>
+            <input class="form-input" type="password" formControlName="passwordRepetir" autocomplete="new-password" />
+            @if (passwordForm.controls.passwordRepetir.touched && passwordForm.errors?.['passwordsNoCoinciden']) {
+              <span class="form-error">Las contraseñas no coinciden</span>
+            }
+          </label>
+
+          @if (errorPassword()) {
+            <p class="alert alert-error" role="alert">{{ errorPassword() }}</p>
+          }
+
+          @if (exitoPassword()) {
+            <p class="alert alert-exito" role="status">Contraseña actualizada correctamente.</p>
+          }
+
+          <button class="btn btn-primary" type="submit" [disabled]="guardandoPassword()">
+            {{ guardandoPassword() ? 'Guardando…' : 'Cambiar contraseña' }}
+          </button>
+        </form>
+      </section>
+
+    </div>
+  }
+</div>
