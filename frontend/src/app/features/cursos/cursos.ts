@@ -1,25 +1,29 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
+import { SearchBar } from '../../core/components/search-bar/search-bar';
 import { Rol } from '../../core/models/auth.model';
 import { AuthService } from '../../core/services/auth.service';
+import { ConfirmService } from '../../core/services/confirm.service';
 import { Curso, CursoMateria, CursoRequest, CursoService } from '../../core/services/curso.service';
 import { Usuario, UsuarioService } from '../../core/services/usuario.service';
+import { TableSorter, filtrar } from '../../core/utils/tabla';
 
 type ModoFormulario = 'crear' | 'editar' | null;
 
 @Component({
   selector: 'app-cursos',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, SearchBar],
   templateUrl: './cursos.html',
   styleUrl: './cursos.css',
 })
 export class Cursos implements OnInit {
   private readonly cursoService = inject(CursoService);
   private readonly usuarioService = inject(UsuarioService);
+  private readonly confirmService = inject(ConfirmService);
   protected readonly authService = inject(AuthService);
   private readonly fb = inject(FormBuilder);
 
@@ -32,6 +36,12 @@ export class Cursos implements OnInit {
   protected readonly profesores = signal<Usuario[]>([]);
   protected readonly cargando = signal(false);
   protected readonly error = signal<string | null>(null);
+
+  protected readonly termino = signal('');
+  protected readonly sorter = new TableSorter();
+  protected readonly filas = computed(() =>
+    this.sorter.ordenar(filtrar(this.cursos(), this.termino())),
+  );
 
   protected readonly modo = signal<ModoFormulario>(null);
   protected readonly guardando = signal(false);
@@ -179,24 +189,30 @@ export class Cursos implements OnInit {
   }
 
   eliminar(curso: Curso): void {
-    const confirmado = confirm(
-      `¿Dar de baja el curso de ${curso.materia.nombre} (${curso.anio} - ${curso.cuatrimestre}º Cuat., Comisión "${curso.comision}")?`
-    );
-    if (!confirmado) {
-      return;
-    }
+    this.confirmService
+      .confirmar({
+        titulo: 'Dar de baja curso',
+        mensaje: `¿Dar de baja el curso de ${curso.materia.nombre} (${curso.anio} - ${curso.cuatrimestre}º Cuat., Comisión "${curso.comision}")?`,
+        textoConfirmar: 'Dar de baja',
+        textoCancelar: 'Cancelar',
+      })
+      .subscribe((confirmado) => {
+        if (!confirmado) {
+          return;
+        }
 
-    this.error.set(null);
-    this.cursoService.eliminar(curso.id).subscribe({
-      next: () => this.cargarCursos(),
-      error: (err: HttpErrorResponse) => {
-        const mensaje =
-          typeof err.error === 'string'
-            ? err.error
-            : err.error?.message || 'No se pudo dar de baja el curso.';
-        this.error.set(mensaje);
-      },
-    });
+        this.error.set(null);
+        this.cursoService.eliminar(curso.id).subscribe({
+          next: () => this.cargarCursos(),
+          error: (err: HttpErrorResponse) => {
+            const mensaje =
+              typeof err.error === 'string'
+                ? err.error
+                : err.error?.message || 'No se pudo dar de baja el curso.';
+            this.error.set(mensaje);
+          },
+        });
+      });
   }
 
   private onGuardadoExitoso(): void {

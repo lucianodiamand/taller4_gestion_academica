@@ -1,0 +1,176 @@
+<div class="materias-page">
+  <div class="page-nav">
+    <a routerLink="/" class="back-link">← Volver al inicio</a>
+  </div>
+
+  <header class="page-header">
+    <div>
+      <h1 class="page-title">Gestión de materias</h1>
+      <p class="page-subtitle">Consulta y administración del plan de materias</p>
+    </div>
+    @if (puedeGestionar) {
+      <button class="btn btn-primary" type="button" (click)="abrirFormularioCrear()">
+        + Nueva materia
+      </button>
+    }
+  </header>
+
+  @if (error()) {
+    <p class="alert" role="alert">{{ error() }}</p>
+  }
+
+  @if (cargando()) {
+    <p class="page-loading">Cargando materias…</p>
+  } @else {
+    <div class="table-toolbar">
+      <app-search-bar
+        [(termino)]="termino"
+        placeholder="Buscar por código, nombre, descripción, año…"
+      />
+      <span class="table-count">
+        {{ filas().length }} de {{ materias().length }} materias
+      </span>
+    </div>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th class="sortable" (click)="sorter.toggle('codigo')">
+            Código<span class="sort-arrow">{{ sorter.flecha('codigo') }}</span>
+          </th>
+          <th class="sortable" (click)="sorter.toggle('nombre')">
+            Nombre<span class="sort-arrow">{{ sorter.flecha('nombre') }}</span>
+          </th>
+          <th>Descripción</th>
+          <th>Contenido / Plan de estudio</th>
+          <th class="sortable" (click)="sorter.toggle('anioCursada')">
+            Año<span class="sort-arrow">{{ sorter.flecha('anioCursada') }}</span>
+          </th>
+          <th class="sortable" (click)="sorter.toggle('activo')">
+            Estado<span class="sort-arrow">{{ sorter.flecha('activo') }}</span>
+          </th>
+          @if (puedeGestionar) {
+            <th>Acciones</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (materia of filas(); track materia.id) {
+          <tr>
+            <td><span class="codigo-badge">{{ materia.codigo }}</span></td>
+            <td>
+              <strong>{{ materia.nombre }}</strong>
+            </td>
+            <td>{{ materia.descripcion || '-' }}</td>
+            <td class="cell-contenido">{{ materia.contenido || '-' }}</td>
+            <td>{{ materia.anioCursada }}º año</td>
+            <td>
+              <span [class]="materia.activo ? 'estado-badge estado-activo' : 'estado-badge estado-inactivo'">
+                {{ materia.activo ? 'Activo' : 'Inactivo' }}
+              </span>
+            </td>
+            @if (puedeGestionar) {
+              <td class="row-acciones">
+                <button class="btn btn-edit" type="button" (click)="abrirFormularioEditar(materia)">
+                  Editar
+                </button>
+                @if (materia.activo) {
+                  <button class="btn btn-solid-danger" type="button" (click)="eliminar(materia)">
+                    Dar de baja
+                  </button>
+                }
+              </td>
+            }
+          </tr>
+        } @empty {
+          <tr>
+            <td [attr.colspan]="puedeGestionar ? 7 : 6" class="cell-vacio">
+              {{
+                materias().length === 0
+                  ? 'No hay materias cargadas todavía.'
+                  : 'No hay resultados para tu búsqueda.'
+              }}
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+
+  @if (modo()) {
+    <div class="modal-overlay" (click)="cerrarFormulario()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <h2 class="modal-title">
+          {{ modo() === 'crear' ? 'Nueva materia' : 'Editar materia' }}
+        </h2>
+
+        <form class="form" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+          <div class="form-row">
+            <label class="form-field">
+              <span class="form-label">Código</span>
+              <input
+                class="form-input form-input-readonly"
+                type="text"
+                [value]="codigoAmostrar()"
+                readonly
+                tabindex="-1"
+              />
+              @if (modo() === 'crear') {
+                <span class="form-hint">El código se asigna automáticamente.</span>
+              }
+            </label>
+
+            <label class="form-field">
+              <span class="form-label">Año de cursada</span>
+              <input class="form-input" type="number" min="1" max="6" formControlName="anioCursada" />
+              @if (form.controls.anioCursada.touched && form.controls.anioCursada.invalid) {
+                <span class="form-error">Entre 1 y 6</span>
+              }
+            </label>
+          </div>
+
+          <label class="form-field">
+            <span class="form-label">Nombre</span>
+            <input class="form-input" type="text" formControlName="nombre" placeholder="Ej: Matemática" />
+            @if (form.controls.nombre.touched && form.controls.nombre.invalid) {
+              <span class="form-error">Requerido</span>
+            }
+          </label>
+
+          <label class="form-field">
+            <span class="form-label">Descripción (opcional)</span>
+            <textarea
+              class="form-input form-textarea"
+              rows="2"
+              formControlName="descripcion"
+              placeholder="Ej: Breve resumen de la materia…"
+            ></textarea>
+          </label>
+
+          <label class="form-field">
+            <span class="form-label">Contenido / Plan de estudio (opcional)</span>
+            <textarea
+              class="form-input form-textarea"
+              rows="5"
+              formControlName="contenido"
+              placeholder="Ej: Unidad 1: …, Unidad 2: …, bibliografía…"
+            ></textarea>
+          </label>
+
+          @if (errorFormulario()) {
+            <p class="alert" role="alert">{{ errorFormulario() }}</p>
+          }
+
+          <div class="modal-actions">
+            <button class="btn btn-secondary" type="button" (click)="cerrarFormulario()">
+              Cancelar
+            </button>
+            <button class="btn btn-primary" type="submit" [disabled]="guardando()">
+              {{ guardando() ? 'Guardando…' : 'Guardar materia' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>

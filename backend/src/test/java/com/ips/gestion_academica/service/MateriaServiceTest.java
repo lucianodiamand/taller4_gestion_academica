@@ -2,7 +2,6 @@ package com.ips.gestion_academica.service;
 
 import com.ips.gestion_academica.dto.materia.MateriaRequest;
 import com.ips.gestion_academica.dto.materia.MateriaResponse;
-import com.ips.gestion_academica.exception.RecursoDuplicadoException;
 import com.ips.gestion_academica.exception.RecursoNoEncontradoException;
 import com.ips.gestion_academica.exception.RecursoInactivoException;
 import com.ips.gestion_academica.model.Materia;
@@ -33,9 +32,9 @@ public class MateriaServiceTest {
 
     private MateriaRequest crearRequestValido() {
         MateriaRequest request = new MateriaRequest();
-        request.setCodigo("MAT-001");
         request.setNombre("Matematica I");
         request.setDescripcion("Algebra y geometria");
+        request.setContenido("Unidades 1 a 4");
         request.setAnioCursada(1);
         return request;
     }
@@ -51,12 +50,21 @@ public class MateriaServiceTest {
         return materia;
     }
 
+    private Materia crearMateria(String codigo) {
+        Materia materia = new Materia();
+        materia.setId(1L);
+        materia.setCodigo(codigo);
+        materia.setNombre("Materia");
+        materia.setAnioCursada(1);
+        materia.setActivo(true);
+        return materia;
+    }
+
     @Test
-    void crearMateria_deberiaCrearMateriaCorrectamente() {
+    void crearMateria_deberiaCrearMateriaConCodigoAutogenerado() {
         MateriaRequest request = crearRequestValido();
 
-        when(materiaRepository.existsByCodigo(request.getCodigo()))
-                .thenReturn(false);
+        when(materiaRepository.findAll()).thenReturn(List.of());
 
         when(materiaRepository.save(any(Materia.class)))
                 .thenAnswer(invocation -> {
@@ -72,6 +80,7 @@ public class MateriaServiceTest {
         assertEquals("MAT-001", response.getCodigo());
         assertEquals("Matematica I", response.getNombre());
         assertEquals("Algebra y geometria", response.getDescripcion());
+        assertEquals("Unidades 1 a 4", response.getContenido());
         assertEquals(1, response.getAnioCursada());
         assertTrue(response.getActivo());
 
@@ -81,54 +90,58 @@ public class MateriaServiceTest {
         Materia materiaGuardada = captor.getValue();
         assertEquals("MAT-001", materiaGuardada.getCodigo());
         assertEquals("Matematica I", materiaGuardada.getNombre());
+        assertEquals("Unidades 1 a 4", materiaGuardada.getContenido());
         assertEquals(1, materiaGuardada.getAnioCursada());
         assertTrue(materiaGuardada.getActivo());
     }
 
-@Test
-    void crearMateria_deberiaLanzarErrorCuandoCodigoEstaDuplicado() {
-        MateriaRequest request = crearRequestValido();
-
-        when(materiaRepository.existsByCodigo(request.getCodigo()))
-                .thenReturn(true);
-
-        assertThrows(
-                RecursoDuplicadoException.class,
-                () -> materiaService.crearMateria(request)
-        );
-
-        verify(materiaRepository, never()).save(any(Materia.class));
-    }
-
     @Test
-    void crearMateria_deberiaGuardarLosDatosCorrectos() {
+    void crearMateria_deberiaGenerarCodigoIncremental() {
         MateriaRequest request = crearRequestValido();
-        request.setCodigo("FISI1");
-        request.setNombre("Fisica I");
-        request.setDescripcion("MRU :P");
-        request.setAnioCursada(2);
 
-        when(materiaRepository.existsByCodigo(request.getCodigo()))
-                .thenReturn(false);
+        when(materiaRepository.findAll())
+                .thenReturn(List.of(crearMateria("MAT-001"), crearMateria("MAT-002")));
 
         when(materiaRepository.save(any(Materia.class)))
                 .thenAnswer(invocation -> {
-                    Materia materia = invocation.getArgument(0);
-                    materia.setId(2L);
-                    return materia;
+                    Materia m = invocation.getArgument(0);
+                    m.setId(10L);
+                    return m;
                 });
 
-        materiaService.crearMateria(request);
+        MateriaResponse response = materiaService.crearMateria(request);
 
-        ArgumentCaptor<Materia> captor = ArgumentCaptor.forClass(Materia.class);
-        verify(materiaRepository).save(captor.capture());
+        assertEquals("MAT-003", response.getCodigo());
+    }
 
-        Materia materiaGuardada = captor.getValue();
-        assertEquals("FISI1", materiaGuardada.getCodigo());
-        assertEquals("Fisica I", materiaGuardada.getNombre());
-        assertEquals("MRU :P", materiaGuardada.getDescripcion());
-        assertEquals(2, materiaGuardada.getAnioCursada());
-        assertTrue(materiaGuardada.getActivo());
+    @Test
+    void crearMateria_deberiaNoColisionarConMateriaInactiva() {
+        MateriaRequest request = crearRequestValido();
+
+        Materia inactiva = crearMateria("MAT-002");
+        inactiva.setActivo(false);
+
+        when(materiaRepository.findAll())
+                .thenReturn(List.of(crearMateria("MAT-001"), inactiva));
+
+        when(materiaRepository.save(any(Materia.class)))
+                .thenAnswer(invocation -> {
+                    Materia m = invocation.getArgument(0);
+                    m.setId(10L);
+                    return m;
+                });
+
+        MateriaResponse response = materiaService.crearMateria(request);
+
+        assertEquals("MAT-003", response.getCodigo());
+    }
+
+    @Test
+    void obtenerProximoCodigo_deberiaIgnorarCodigosConFormatoDistinto() {
+        when(materiaRepository.findAll())
+                .thenReturn(List.of(crearMateria("MAT-005"), crearMateria("LEGACY"), crearMateria("OTRO-999")));
+
+        assertEquals("MAT-006", materiaService.obtenerProximoCodigo());
     }
 
     @Test
@@ -175,11 +188,24 @@ public class MateriaServiceTest {
     }
 
     @Test
-    void modificarMateria_deberiaModificarMateriaCorrectamente() {
+    void buscarPorId_deberiaLanzarErrorCuandoMateriaEstaInactiva() {
+        Materia materia = crearMateriaActiva();
+        materia.setActivo(false);
+
+        when(materiaRepository.findById(1L))
+                .thenReturn(Optional.of(materia));
+
+        assertThrows(
+                RecursoInactivoException.class,
+                () -> materiaService.obtenerMateriaPorId(1L)
+        );
+    }
+
+    @Test
+    void modificarMateria_deberiaModificarMateriaSinCambiarCodigo() {
         Materia materiaExistente = crearMateriaActiva();
 
         MateriaRequest request = crearRequestValido();
-        request.setCodigo("MATE2");
         request.setNombre("Matematica II");
         request.setDescripcion("Calculo avanzado");
         request.setAnioCursada(2);
@@ -187,16 +213,13 @@ public class MateriaServiceTest {
         when(materiaRepository.findById(1L))
                 .thenReturn(Optional.of(materiaExistente));
 
-        when(materiaRepository.existsByCodigo(request.getCodigo()))
-                .thenReturn(false);
-
         when(materiaRepository.save(any(Materia.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         MateriaResponse response = materiaService.actualizarMateria(1L, request);
 
         assertNotNull(response);
-        assertEquals("MATE2", response.getCodigo());
+        assertEquals("MAT-001", response.getCodigo());
         assertEquals("Matematica II", response.getNombre());
         assertEquals("Calculo avanzado", response.getDescripcion());
         assertEquals(2, response.getAnioCursada());
@@ -205,7 +228,7 @@ public class MateriaServiceTest {
         verify(materiaRepository).save(captor.capture());
 
         Materia materiaModificada = captor.getValue();
-        assertEquals("MATE2", materiaModificada.getCodigo());
+        assertEquals("MAT-001", materiaModificada.getCodigo());
         assertEquals("Matematica II", materiaModificada.getNombre());
         assertEquals(2, materiaModificada.getAnioCursada());
         assertTrue(materiaModificada.getActivo());
@@ -227,19 +250,16 @@ public class MateriaServiceTest {
     }
 
     @Test
-    void modificarMateria_deberiaLanzarErrorCuandoCodigoPerteneceAOtraMateria() {
-        Materia materiaExistente = crearMateriaActiva();
+    void modificarMateria_deberiaLanzarErrorCuandoMateriaEstaInactiva() {
+        Materia materia = crearMateriaActiva();
+        materia.setActivo(false);
         MateriaRequest request = crearRequestValido();
-        request.setCodigo("OTRO");
 
         when(materiaRepository.findById(1L))
-                .thenReturn(Optional.of(materiaExistente));
-
-        when(materiaRepository.existsByCodigo(request.getCodigo()))
-                .thenReturn(true);
+                .thenReturn(Optional.of(materia));
 
         assertThrows(
-                RecursoDuplicadoException.class,
+                RecursoInactivoException.class,
                 () -> materiaService.actualizarMateria(1L, request)
         );
 
@@ -286,37 +306,6 @@ public class MateriaServiceTest {
         assertThrows(
                 RecursoInactivoException.class,
                 () -> materiaService.eliminarMateria(1L)
-        );
-
-        verify(materiaRepository, never()).save(any(Materia.class));
-    }
-
-    @Test
-    void buscarPorId_deberiaLanzarErrorCuandoMateriaEstaInactiva() {
-        Materia materia = crearMateriaActiva();
-        materia.setActivo(false);
-
-        when(materiaRepository.findById(1L))
-                .thenReturn(Optional.of(materia));
-
-        assertThrows(
-                RecursoInactivoException.class,
-                () -> materiaService.obtenerMateriaPorId(1L)
-        );
-    }
-
-    @Test
-    void modificarMateria_deberiaLanzarErrorCuandoMateriaEstaInactiva() {
-        Materia materia = crearMateriaActiva();
-        materia.setActivo(false);
-        MateriaRequest request = crearRequestValido();
-
-        when(materiaRepository.findById(1L))
-                .thenReturn(Optional.of(materia));
-
-        assertThrows(
-                RecursoInactivoException.class,
-                () -> materiaService.actualizarMateria(1L, request)
         );
 
         verify(materiaRepository, never()).save(any(Materia.class));

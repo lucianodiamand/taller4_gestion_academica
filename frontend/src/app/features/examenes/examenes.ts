@@ -1,10 +1,12 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
+import { SearchBar } from '../../core/components/search-bar/search-bar';
 import { Rol } from '../../core/models/auth.model';
 import { AuthService } from '../../core/services/auth.service';
+import { ConfirmService } from '../../core/services/confirm.service';
 import { Curso, CursoService } from '../../core/services/curso.service';
 import {
   Examen,
@@ -12,13 +14,14 @@ import {
   ExamenService,
   TipoExamen,
 } from '../../core/services/examen.service';
+import { TableSorter, filtrar } from '../../core/utils/tabla';
 
 type ModoFormulario = 'crear' | 'editar' | null;
 
 @Component({
   selector: 'app-examenes',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, SearchBar],
   templateUrl: './examenes.html',
   styleUrl: './examenes.css',
 })
@@ -26,6 +29,7 @@ export class Examenes implements OnInit {
   protected readonly authService = inject(AuthService);
   private readonly examenService = inject(ExamenService);
   private readonly cursoService = inject(CursoService);
+  private readonly confirmService = inject(ConfirmService);
   private readonly fb = inject(FormBuilder);
 
   protected readonly tiposExamen = Object.values(TipoExamen);
@@ -36,6 +40,12 @@ export class Examenes implements OnInit {
   protected readonly cursos = signal<Curso[]>([]);
   protected readonly cargando = signal(false);
   protected readonly error = signal<string | null>(null);
+
+  protected readonly termino = signal('');
+  protected readonly sorter = new TableSorter();
+  protected readonly filas = computed(() =>
+    this.sorter.ordenar(filtrar(this.examenes(), this.termino())),
+  );
 
   protected readonly modo = signal<ModoFormulario>(null);
   protected readonly guardando = signal(false);
@@ -158,24 +168,30 @@ export class Examenes implements OnInit {
   }
 
   eliminar(examen: Examen): void {
-    const confirmado = confirm(
-      `¿Dar de baja el examen ${examen.tipo} del día ${examen.fecha}?`
-    );
-    if (!confirmado) {
-      return;
-    }
+    this.confirmService
+      .confirmar({
+        titulo: 'Dar de baja examen',
+        mensaje: `¿Dar de baja el examen ${examen.tipo} del día ${examen.fecha}?`,
+        textoConfirmar: 'Dar de baja',
+        textoCancelar: 'Cancelar',
+      })
+      .subscribe((confirmado) => {
+        if (!confirmado) {
+          return;
+        }
 
-    this.error.set(null);
-    this.examenService.eliminar(examen.id).subscribe({
-      next: () => this.cargarExamenes(),
-      error: (err: HttpErrorResponse) => {
-        this.error.set(
-          typeof err.error === 'string'
-            ? err.error
-            : 'No se pudo dar de baja el examen.'
-        );
-      },
-    });
+        this.error.set(null);
+        this.examenService.eliminar(examen.id).subscribe({
+          next: () => this.cargarExamenes(),
+          error: (err: HttpErrorResponse) => {
+            this.error.set(
+              typeof err.error === 'string'
+                ? err.error
+                : 'No se pudo dar de baja el examen.'
+            );
+          },
+        });
+      });
   }
 
   private onGuardadoExitoso(): void {

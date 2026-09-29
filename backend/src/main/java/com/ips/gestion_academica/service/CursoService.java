@@ -51,6 +51,7 @@ public class CursoService {
             materia.getCodigo(),
             materia.getNombre(),
             materia.getDescripcion(),
+            materia.getContenido(),
             materia.getAnioCursada(),
             materia.getActivo()
         );

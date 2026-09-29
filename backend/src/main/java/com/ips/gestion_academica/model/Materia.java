@@ -22,7 +22,10 @@ public class Materia {
     private String nombre;
 
     private String descripcion;
-    
+
+    @Column(columnDefinition = "TEXT")
+    private String contenido;
+
     @Column(nullable = false)
     private int anioCursada;
 
@@ -59,6 +62,14 @@ public class Materia {
 
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
+    }
+
+    public String getContenido() {
+        return contenido;
+    }
+
+    public void setContenido(String contenido) {
+        this.contenido = contenido;
     }
 
     public int getAnioCursada() {

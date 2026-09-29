@@ -6,14 +6,17 @@ public class MateriaResponse {
     private String codigo;
     private String nombre;
     private String descripcion;
+    private String contenido;
     private int anioCursada;
     private Boolean activo;
 
-    public MateriaResponse(long id, String codigo, String nombre, String descripcion, int anioCursada, Boolean activo) {
+    public MateriaResponse(long id, String codigo, String nombre, String descripcion,
+                           String contenido, int anioCursada, Boolean activo) {
         this.id = id;
         this.codigo = codigo;
         this.nombre = nombre;
         this.descripcion = descripcion;
+        this.contenido = contenido;
         this.anioCursada = anioCursada;
         this.activo = activo;
     }
@@ -32,6 +35,10 @@ public class MateriaResponse {
 
     public String getDescripcion() {
         return descripcion;
+    }
+
+    public String getContenido() {
+        return contenido;
     }
 
     public int getAnioCursada() {

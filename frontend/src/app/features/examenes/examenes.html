@@ -1,11 +1,11 @@
 <div class="examenes-page">
-  <header class="examenes-header">
+  <header class="page-header">
     <div>
-      <div class="examenes-nav">
-        <a routerLink="/" class="link-volver">← Volver al inicio</a>
+      <div class="page-nav">
+        <a routerLink="/" class="back-link">← Volver al inicio</a>
       </div>
-      <h1 class="examenes-title">Exámenes</h1>
-      <p class="examenes-subtitle">
+      <h1 class="page-title">Exámenes</h1>
+      <p class="page-subtitle">
         Consulta de fechas y cronograma de exámenes
         @if (puedeGestionar) {
           (modo administración activo)
@@ -25,14 +25,30 @@
   }
 
   @if (cargando()) {
-    <p class="examenes-loading">Cargando exámenes…</p>
+    <p class="page-loading">Cargando exámenes…</p>
   } @else {
-    <table class="examenes-table">
+    <div class="table-toolbar">
+      <app-search-bar
+        [(termino)]="termino"
+        placeholder="Buscar por fecha, tipo, curso, descripción…"
+      />
+      <span class="table-count">
+        {{ filas().length }} de {{ examenes().length }} exámenes
+      </span>
+    </div>
+
+    <table class="data-table">
       <thead>
         <tr>
-          <th>Fecha</th>
-          <th>Tipo</th>
-          <th>Curso</th>
+          <th class="sortable" (click)="sorter.toggle('fecha')">
+            Fecha<span class="sort-arrow">{{ sorter.flecha('fecha') }}</span>
+          </th>
+          <th class="sortable" (click)="sorter.toggle('tipo')">
+            Tipo<span class="sort-arrow">{{ sorter.flecha('tipo') }}</span>
+          </th>
+          <th class="sortable" (click)="sorter.toggle('curso.comision')">
+            Curso<span class="sort-arrow">{{ sorter.flecha('curso.comision') }}</span>
+          </th>
           <th>Descripción</th>
           @if (puedeGestionar) {
             <th>Acciones</th>
@@ -40,7 +56,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (examen of examenes(); track examen.id) {
+        @for (examen of filas(); track examen.id) {
           <tr>
             <td class="col-fecha">{{ examen.fecha }}</td>
             <td>
@@ -54,11 +70,11 @@
             </td>
             <td>{{ examen.descripcion || '-' }}</td>
             @if (puedeGestionar) {
-              <td class="examenes-acciones">
-                <button class="btn btn-link" type="button" (click)="abrirFormularioEditar(examen)">
+              <td class="row-acciones">
+                <button class="btn btn-edit" type="button" (click)="abrirFormularioEditar(examen)">
                   Editar
                 </button>
-                <button class="btn btn-link btn-danger" type="button" (click)="eliminar(examen)">
+                <button class="btn btn-solid-danger" type="button" (click)="eliminar(examen)">
                   Dar de baja
                 </button>
               </td>
@@ -66,8 +82,12 @@
           </tr>
         } @empty {
           <tr>
-            <td [attr.colspan]="puedeGestionar ? 5 : 4" class="examenes-vacio">
-              No hay exámenes registrados todavía.
+            <td [attr.colspan]="puedeGestionar ? 5 : 4" class="cell-vacio">
+              {{
+                examenes().length === 0
+                  ? 'No hay exámenes registrados todavía.'
+                  : 'No hay resultados para tu búsqueda.'
+              }}
             </td>
           </tr>
         }
@@ -82,7 +102,7 @@
           {{ modo() === 'crear' ? 'Nuevo examen' : 'Editar examen' }}
         </h2>
 
-        <form class="examen-form" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+        <form class="form" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
           <div class="form-row">
             <label class="form-field">
               <span class="form-label">Fecha del examen</span>

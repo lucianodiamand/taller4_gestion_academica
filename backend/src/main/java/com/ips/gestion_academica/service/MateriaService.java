@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 
 import com.ips.gestion_academica.dto.materia.MateriaRequest;
 import com.ips.gestion_academica.dto.materia.MateriaResponse;
-import com.ips.gestion_academica.exception.RecursoDuplicadoException;
 import com.ips.gestion_academica.exception.RecursoInactivoException;
 import com.ips.gestion_academica.exception.RecursoNoEncontradoException;
 import com.ips.gestion_academica.model.Materia;
@@ -14,6 +13,9 @@ import com.ips.gestion_academica.repository.MateriaRepository;
 
 @Service
 public class MateriaService {
+
+    private static final String PREFIJO_CODIGO = "MAT";
+
     private final MateriaRepository materiaRepository;
 
     public MateriaService(MateriaRepository materiaRepository) {
@@ -26,20 +28,40 @@ public class MateriaService {
             materia.getCodigo(),
             materia.getNombre(),
             materia.getDescripcion(),
+            materia.getContenido(),
             materia.getAnioCursada(),
             materia.getActivo()
         );
     }
 
-    public MateriaResponse crearMateria(MateriaRequest request) {
-        if (materiaRepository.existsByCodigo(request.getCodigo())) {
-            throw new RecursoDuplicadoException("Ya existe una materia con el código: " + request.getCodigo());
+    // calcula el proximo codigo autoincremental (max existente + 1, evita colisiones con inactivas)
+    public String obtenerProximoCodigo() {
+        int maximo = 0;
+
+        for (Materia materia : materiaRepository.findAll()) {
+            String codigo = materia.getCodigo();
+            if (codigo == null || !codigo.startsWith(PREFIJO_CODIGO + "-")) {
+                continue;
+            }
+            try {
+                int numero = Integer.parseInt(codigo.substring((PREFIJO_CODIGO + "-").length()));
+                if (numero > maximo) {
+                    maximo = numero;
+                }
+            } catch (NumberFormatException e) {
+                // se ignoran los codigos con formato distinto
+            }
         }
 
+        return PREFIJO_CODIGO + "-" + String.format("%03d", maximo + 1);
+    }
+
+    public MateriaResponse crearMateria(MateriaRequest request) {
         Materia materia = new Materia();
-        materia.setCodigo(request.getCodigo());
+        materia.setCodigo(obtenerProximoCodigo());
         materia.setNombre(request.getNombre());
         materia.setDescripcion(request.getDescripcion());
+        materia.setContenido(request.getContenido());
         materia.setAnioCursada(request.getAnioCursada());
         materia.setActivo(true);
 
@@ -71,7 +93,7 @@ public class MateriaService {
         if (!Boolean.TRUE.equals(materia.getActivo())) {
             throw new RecursoInactivoException("Materia", id);
         }
-        
+
         materia.setActivo(false);
         materiaRepository.save(materia);
     }
@@ -84,13 +106,10 @@ public class MateriaService {
             throw new RecursoInactivoException("Materia", id);
         }
 
-        if (!materia.getCodigo().equals(request.getCodigo()) && materiaRepository.existsByCodigo(request.getCodigo())) {
-            throw new RecursoDuplicadoException("Ya existe una materia con el código: " + request.getCodigo());
-        }
-
-        materia.setCodigo(request.getCodigo());
+        // el codigo no se modifica en la edicion
         materia.setNombre(request.getNombre());
         materia.setDescripcion(request.getDescripcion());
+        materia.setContenido(request.getContenido());
         materia.setAnioCursada(request.getAnioCursada());
 
         return convertirAResponse(materiaRepository.save(materia));

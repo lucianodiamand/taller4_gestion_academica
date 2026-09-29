@@ -1,22 +1,26 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
+import { SearchBar } from '../../core/components/search-bar/search-bar';
 import { Rol } from '../../core/models/auth.model';
+import { ConfirmService } from '../../core/services/confirm.service';
 import { Usuario, UsuarioRequest, UsuarioService } from '../../core/services/usuario.service';
+import { TableSorter, filtrar } from '../../core/utils/tabla';
 
 type ModoFormulario = 'crear' | 'editar' | null;
 
 @Component({
   selector: 'app-usuarios',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, SearchBar],
   templateUrl: './usuarios.html',
   styleUrl: './usuarios.css',
 })
 export class Usuarios implements OnInit {
   private readonly usuarioService = inject(UsuarioService);
+  private readonly confirmService = inject(ConfirmService);
   private readonly fb = inject(FormBuilder);
 
   protected readonly roles = Object.values(Rol);
@@ -24,6 +28,12 @@ export class Usuarios implements OnInit {
   protected readonly usuarios = signal<Usuario[]>([]);
   protected readonly cargando = signal(false);
   protected readonly error = signal<string | null>(null);
+
+  protected readonly termino = signal('');
+  protected readonly sorter = new TableSorter();
+  protected readonly filas = computed(() =>
+    this.sorter.ordenar(filtrar(this.usuarios(), this.termino())),
+  );
 
   protected readonly modo = signal<ModoFormulario>(null);
   protected readonly guardando = signal(false);
@@ -131,20 +141,28 @@ export class Usuarios implements OnInit {
   }
 
   eliminar(usuario: Usuario): void {
-    const confirmado = confirm(`¿Dar de baja a ${usuario.nombre} ${usuario.apellido} (legajo ${usuario.legajo})?`);
-    if (!confirmado) {
-      return;
-    }
+    this.confirmService
+      .confirmar({
+        titulo: 'Dar de baja usuario',
+        mensaje: `¿Dar de baja a ${usuario.nombre} ${usuario.apellido} (legajo ${usuario.legajo})?`,
+        textoConfirmar: 'Dar de baja',
+        textoCancelar: 'Cancelar',
+      })
+      .subscribe((confirmado) => {
+        if (!confirmado) {
+          return;
+        }
 
-    this.error.set(null);
-    this.usuarioService.eliminar(usuario.id).subscribe({
-      next: () => this.cargarUsuarios(),
-      error: (err: HttpErrorResponse) => {
-        this.error.set(
-          typeof err.error === 'string' ? err.error : 'No se pudo dar de baja al usuario.'
-        );
-      },
-    });
+        this.error.set(null);
+        this.usuarioService.eliminar(usuario.id).subscribe({
+          next: () => this.cargarUsuarios(),
+          error: (err: HttpErrorResponse) => {
+            this.error.set(
+              typeof err.error === 'string' ? err.error : 'No se pudo dar de baja al usuario.'
+            );
+          },
+        });
+      });
   }
 
   private onGuardadoExitoso(): void {

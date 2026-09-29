@@ -1,0 +1,15 @@
+<div class="search-bar">
+  <span class="search-icon" aria-hidden="true">🔍</span>
+  <input
+    class="search-input"
+    type="text"
+    [placeholder]="placeholder()"
+    [ngModel]="termino()"
+    (ngModelChange)="termino.set($event)"
+  />
+  @if (termino()) {
+    <button class="search-clear" type="button" (click)="termino.set('')" aria-label="Limpiar búsqueda">
+      ✕
+    </button>
+  }
+</div>

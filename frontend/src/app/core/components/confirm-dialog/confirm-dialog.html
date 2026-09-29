@@ -1,0 +1,22 @@
+@if (confirm.estado.abierto()) {
+  <div class="confirm-overlay" (click)="confirm.cancelar()">
+    <div
+      class="confirm-card"
+      role="alertdialog"
+      aria-modal="true"
+      (click)="$event.stopPropagation()"
+    >
+      <h2 class="confirm-title">{{ confirm.estado.titulo() }}</h2>
+      <p class="confirm-message">{{ confirm.estado.mensaje() }}</p>
+
+      <div class="confirm-actions">
+        <button class="btn btn-secondary" type="button" (click)="confirm.cancelar()">
+          {{ confirm.estado.textoCancelar() }}
+        </button>
+        <button class="btn btn-solid-danger" type="button" (click)="confirm.aceptar()">
+          {{ confirm.estado.textoConfirmar() }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

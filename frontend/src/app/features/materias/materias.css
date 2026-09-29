@@ -3,24 +3,18 @@
   padding: 2rem;
 }
 
-.materia-codigo {
-  margin-left: 0.35rem;
-  color: var(--color-muted);
-  font-size: 0.82rem;
-}
-
-.badge-comision {
+.codigo-badge {
   font-size: 0.78rem;
   font-weight: 600;
-  color: var(--color-ink);
-  background: #edf0f5;
+  letter-spacing: 0.03em;
+  color: var(--color-accent-ink);
+  background: rgba(201, 162, 39, 0.12);
   border-radius: 6px;
   padding: 0.2rem 0.5rem;
   white-space: nowrap;
 }
 
-.badge-activo,
-.badge-inactivo {
+.estado-badge {
   font-size: 0.75rem;
   font-weight: 600;
   border-radius: 999px;
@@ -28,14 +22,22 @@
   white-space: nowrap;
 }
 
-.badge-activo {
+.estado-activo {
   color: var(--color-success);
   background: var(--color-success-bg);
 }
 
-.badge-inactivo {
+.estado-inactivo {
   color: var(--color-danger);
   background: rgba(179, 38, 30, 0.1);
+}
+
+.cell-contenido {
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-muted);
 }
 
 @media (max-width: 560px) {

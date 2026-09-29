@@ -1,12 +1,12 @@
 <div class="usuarios-page">
-  <div class="usuarios-nav">
+  <div class="page-nav">
     <a routerLink="/" class="back-link">← Volver al inicio</a>
   </div>
 
-  <header class="usuarios-header">
+  <header class="page-header">
     <div>
-      <h1 class="usuarios-title">Gestión de usuarios</h1>
-      <p class="usuarios-subtitle">Alta, edición y baja de usuarios del sistema</p>
+      <h1 class="page-title">Gestión de usuarios</h1>
+      <p class="page-subtitle">Alta, edición y baja de usuarios del sistema</p>
     </div>
     <button class="btn btn-primary" type="button" (click)="abrirFormularioCrear()">
       + Nuevo usuario
@@ -18,39 +18,67 @@
   }
 
   @if (cargando()) {
-    <p class="usuarios-loading">Cargando usuarios…</p>
+    <p class="page-loading">Cargando usuarios…</p>
   } @else {
-    <table class="usuarios-table">
+    <div class="table-toolbar">
+      <app-search-bar
+        [(termino)]="termino"
+        placeholder="Buscar por legajo, nombre, email, rol…"
+      />
+      <span class="table-count">
+        {{ filas().length }} de {{ usuarios().length }} usuarios
+      </span>
+    </div>
+
+    <table class="data-table">
       <thead>
         <tr>
-          <th>Legajo</th>
-          <th>Nombre</th>
-          <th>Apellido</th>
-          <th>Email</th>
-          <th>Rol</th>
-          <th></th>
+          <th class="sortable" (click)="sorter.toggle('legajo')">
+            Legajo<span class="sort-arrow">{{ sorter.flecha('legajo') }}</span>
+          </th>
+          <th class="sortable" (click)="sorter.toggle('nombre')">
+            Nombre<span class="sort-arrow">{{ sorter.flecha('nombre') }}</span>
+          </th>
+          <th class="sortable" (click)="sorter.toggle('apellido')">
+            Apellido<span class="sort-arrow">{{ sorter.flecha('apellido') }}</span>
+          </th>
+          <th class="sortable" (click)="sorter.toggle('email')">
+            Email<span class="sort-arrow">{{ sorter.flecha('email') }}</span>
+          </th>
+          <th class="sortable" (click)="sorter.toggle('rol')">
+            Rol<span class="sort-arrow">{{ sorter.flecha('rol') }}</span>
+          </th>
+          <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
-        @for (usuario of usuarios(); track usuario.id) {
+        @for (usuario of filas(); track usuario.id) {
           <tr>
             <td>{{ usuario.legajo }}</td>
             <td>{{ usuario.nombre }}</td>
             <td>{{ usuario.apellido }}</td>
             <td>{{ usuario.email }}</td>
             <td><span class="rol-badge">{{ usuario.rol }}</span></td>
-            <td class="usuarios-acciones">
-              <button class="btn btn-link" type="button" (click)="abrirFormularioEditar(usuario)">
+            <td class="row-acciones">
+              <button class="btn btn-edit" type="button" (click)="abrirFormularioEditar(usuario)">
                 Editar
               </button>
-              <button class="btn btn-link btn-danger" type="button" (click)="eliminar(usuario)">
-                Dar de baja
-              </button>
+              @if (usuario.activo) {
+                <button class="btn btn-solid-danger" type="button" (click)="eliminar(usuario)">
+                  Dar de baja
+                </button>
+              }
             </td>
           </tr>
         } @empty {
           <tr>
-            <td colspan="6" class="usuarios-vacio">No hay usuarios cargados todavía.</td>
+            <td colspan="6" class="cell-vacio">
+              {{
+                usuarios().length === 0
+                  ? 'No hay usuarios cargados todavía.'
+                  : 'No hay resultados para tu búsqueda.'
+              }}
+            </td>
           </tr>
         }
       </tbody>
@@ -64,7 +92,7 @@
           {{ modo() === 'crear' ? 'Nuevo usuario' : 'Editar usuario' }}
         </h2>
 
-        <form class="usuario-form" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+        <form class="form" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
           <div class="form-row">
             <label class="form-field">
               <span class="form-label">Nombre</span>

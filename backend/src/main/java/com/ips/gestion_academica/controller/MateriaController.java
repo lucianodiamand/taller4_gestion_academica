@@ -10,6 +10,7 @@ import com.ips.gestion_academica.dto.materia.MateriaResponse;
 import com.ips.gestion_academica.service.MateriaService;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -38,6 +39,13 @@ public class MateriaController {
     public ResponseEntity<MateriaResponse> getMateriaById(@PathVariable("id") Long id) {
         MateriaResponse materia = materiaService.obtenerMateriaPorId(id);
         return ResponseEntity.ok(materia);
+    }
+
+    @GetMapping("/proximo-codigo")
+    public ResponseEntity<Map<String, String>> getProximoCodigo() {
+        return ResponseEntity.ok(
+            Map.of("codigo", materiaService.obtenerProximoCodigo())
+        );
     }
 
     @GetMapping

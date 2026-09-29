@@ -1,12 +1,12 @@
 <div class="cursos-page">
-  <div class="cursos-nav">
+  <div class="page-nav">
     <a routerLink="/" class="back-link">← Volver al inicio</a>
   </div>
 
-  <header class="cursos-header">
+  <header class="page-header">
     <div>
-      <h1 class="cursos-title">Gestión de cursos</h1>
-      <p class="cursos-subtitle">Administración de comisiones, materias y docentes asignados</p>
+      <h1 class="page-title">Gestión de cursos</h1>
+      <p class="page-subtitle">Administración de comisiones, materias y docentes asignados</p>
     </div>
     @if (puedeGestionar) {
       <button class="btn btn-primary" type="button" (click)="abrirFormularioCrear()">
@@ -20,60 +20,82 @@
   }
 
   @if (cargando()) {
-    <p class="cursos-loading">Cargando cursos…</p>
+    <p class="page-loading">Cargando cursos…</p>
   } @else {
-    <div class="table-container">
-      <table class="cursos-table">
-        <thead>
+    <div class="table-toolbar">
+      <app-search-bar
+        [(termino)]="termino"
+        placeholder="Buscar por materia, comisión, docente, año…"
+      />
+      <span class="table-count">
+        {{ filas().length }} de {{ cursos().length }} cursos
+      </span>
+    </div>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th class="sortable" (click)="sorter.toggle('materia.nombre')">
+            Materia<span class="sort-arrow">{{ sorter.flecha('materia.nombre') }}</span>
+          </th>
+          <th class="sortable" (click)="sorter.toggle('comision')">
+            Comisión<span class="sort-arrow">{{ sorter.flecha('comision') }}</span>
+          </th>
+          <th class="sortable" (click)="sorter.toggle('anio')">
+            Período<span class="sort-arrow">{{ sorter.flecha('anio') }}</span>
+          </th>
+          <th class="sortable" (click)="sorter.toggle('profesor.apellido')">
+            Docente a cargo<span class="sort-arrow">{{ sorter.flecha('profesor.apellido') }}</span>
+          </th>
+          <th class="sortable" (click)="sorter.toggle('activo')">
+            Estado<span class="sort-arrow">{{ sorter.flecha('activo') }}</span>
+          </th>
+          @if (puedeGestionar) {
+            <th>Acciones</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (curso of filas(); track curso.id) {
           <tr>
-            <th>Materia</th>
-            <th>Comisión</th>
-            <th>Período</th>
-            <th>Docente a cargo</th>
-            <th>Estado</th>
+            <td>
+              <strong>{{ curso.materia.nombre }}</strong>
+              <span class="materia-codigo">({{ curso.materia.codigo }})</span>
+            </td>
+            <td><span class="badge-comision">{{ curso.comision }}</span></td>
+            <td>{{ curso.anio }} - {{ curso.cuatrimestre }}º Cuatrimestre</td>
+            <td>{{ curso.profesor.nombre }} {{ curso.profesor.apellido }}</td>
+            <td>
+              <span [class]="curso.activo ? 'badge-activo' : 'badge-inactivo'">
+                {{ curso.activo ? 'Activo' : 'Inactivo' }}
+              </span>
+            </td>
             @if (puedeGestionar) {
-              <th>Acciones</th>
+              <td class="row-acciones">
+                <button class="btn btn-edit" type="button" (click)="abrirFormularioEditar(curso)">
+                  Editar
+                </button>
+                @if (curso.activo) {
+                  <button class="btn btn-solid-danger" type="button" (click)="eliminar(curso)">
+                    Dar de baja
+                  </button>
+                }
+              </td>
             }
           </tr>
-        </thead>
-        <tbody>
-          @for (curso of cursos(); track curso.id) {
-            <tr>
-              <td>
-                <strong>{{ curso.materia.nombre }}</strong>
-                <span class="materia-codigo">({{ curso.materia.codigo }})</span>
-              </td>
-              <td><span class="badge-comision">{{ curso.comision }}</span></td>
-              <td>{{ curso.anio }} - {{ curso.cuatrimestre }}º Cuatrimestre</td>
-              <td>{{ curso.profesor.nombre }} {{ curso.profesor.apellido }}</td>
-              <td>
-                <span [class]="curso.activo ? 'badge-activo' : 'badge-inactivo'">
-                  {{ curso.activo ? 'Activo' : 'Inactivo' }}
-                </span>
-              </td>
-              @if (puedeGestionar) {
-                <td class="cursos-acciones">
-                  <button class="btn btn-link" type="button" (click)="abrirFormularioEditar(curso)">
-                    Editar
-                  </button>
-                  @if (curso.activo) {
-                    <button class="btn btn-link btn-danger" type="button" (click)="eliminar(curso)">
-                      Dar de baja
-                    </button>
-                  }
-                </td>
-              }
-            </tr>
-          } @empty {
-            <tr>
-              <td [attr.colspan]="puedeGestionar ? 6 : 5" class="cursos-vacio">
-                No hay cursos cargados todavía.
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+        } @empty {
+          <tr>
+            <td [attr.colspan]="puedeGestionar ? 6 : 5" class="cell-vacio">
+              {{
+                cursos().length === 0
+                  ? 'No hay cursos cargados todavía.'
+                  : 'No hay resultados para tu búsqueda.'
+              }}
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
   }
 
   @if (modo()) {
@@ -83,7 +105,7 @@
           {{ modo() === 'crear' ? 'Nuevo curso' : 'Editar curso' }}
         </h2>
 
-        <form class="curso-form" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+        <form class="form" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
           <label class="form-field">
             <span class="form-label">Materia</span>
             <select class="form-input" formControlName="materiaId">

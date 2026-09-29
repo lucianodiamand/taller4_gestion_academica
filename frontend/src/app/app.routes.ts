@@ -21,6 +21,12 @@ export const routes: Routes = [
       import('./features/usuarios/usuarios').then((m) => m.Usuarios),
   },
   {
+    path: 'materias',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/materias/materias').then((m) => m.Materias),
+  },
+  {
     path: 'cursos',
     canActivate: [authGuard],
     loadComponent: () =>
