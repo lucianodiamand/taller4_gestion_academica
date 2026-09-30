@@ -72,7 +72,7 @@ public class MateriaService {
         Materia materia = materiaRepository.findById(id)
             .orElseThrow(() -> new RecursoNoEncontradoException("Materia", id));
 
-        if (!Boolean.TRUE.equals(materia.getActivo())) {
+        if (!materia.getActivo()) {
             throw new RecursoInactivoException("Materia", id);
         }
 
@@ -90,7 +90,7 @@ public class MateriaService {
         Materia materia = materiaRepository.findById(id)
             .orElseThrow(() -> new RecursoNoEncontradoException("Materia", id));
 
-        if (!Boolean.TRUE.equals(materia.getActivo())) {
+        if (!materia.getActivo()) {
             throw new RecursoInactivoException("Materia", id);
         }
 
@@ -102,7 +102,7 @@ public class MateriaService {
         Materia materia = materiaRepository.findById(id)
             .orElseThrow(() -> new RecursoNoEncontradoException("Materia", id));
 
-        if (!Boolean.TRUE.equals(materia.getActivo())) {
+        if (!materia.getActivo()) {
             throw new RecursoInactivoException("Materia", id);
         }
 

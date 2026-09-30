@@ -1,0 +1,57 @@
+@if (authService.estaLogueado()) {
+  @if (abierto()) {
+    <div class="chat-panel">
+      <header class="chat-header">
+        <span class="chat-title">🤖 academ.ia</span>
+        <button class="chat-close" type="button" (click)="toggle()" aria-label="Cerrar chat">✕</button>
+      </header>
+
+      <div class="chat-messages">
+        @for (m of mensajes(); track $index) {
+          @if (m.rol === 'usuario') {
+            <div class="msg msg-usuario">{{ m.texto }}</div>
+          } @else {
+            <div class="msg msg-bot" [innerHTML]="m.texto | markdown"></div>
+          }
+        }
+        @if (escribiendo()) {
+          <div class="msg msg-bot msg-typing">Escribiendo…</div>
+        }
+        @if (mensajes().length === 0 && !escribiendo()) {
+          <div class="msg msg-bot">
+            Hola 👋 Soy academ.ia. Preguntame por tus próximos exámenes, notas, promedio o docentes.
+          </div>
+        }
+      </div>
+
+      <div class="chat-input">
+        <input
+          type="text"
+          [value]="nuevoMensaje()"
+          (input)="nuevoMensaje.set($any($event.target).value)"
+          (keydown.enter)="enviar()"
+          placeholder="Escribí tu consulta…"
+          autocomplete="off"
+        />
+        <button
+          type="button"
+          [disabled]="escribiendo() || !nuevoMensaje().trim()"
+          (click)="enviar()"
+        >Enviar</button>
+      </div>
+    </div>
+  }
+
+  <button
+    class="chat-fab"
+    type="button"
+    (click)="toggle()"
+    [attr.aria-label]="abierto() ? 'Cerrar chat' : 'Abrir chat'"
+  >
+    @if (abierto()) {
+      ✕
+    } @else {
+      💬
+    }
+  </button>
+}

@@ -186,12 +186,6 @@
               <span class="detalle-label">Año de cursada</span>
               <span class="detalle-valor">{{ materiaDetalle()!.anioCursada }}º año</span>
             </div>
-            <div class="detalle-item">
-              <span class="detalle-label">Estado</span>
-              <span [class]="materiaDetalle()!.activo ? 'estado-badge estado-activo' : 'estado-badge estado-inactivo'">
-                {{ materiaDetalle()!.activo ? 'Activo' : 'Inactivo' }}
-              </span>
-            </div>
           </div>
 
           <div class="detalle-item">

@@ -59,7 +59,7 @@ public class InscripcionExamenService {
                     .orElseThrow(() -> new RecursoNoEncontradoException("alumno", request.getAlumnoId()));
         }
 
-        if (!Boolean.TRUE.equals(alumno.getActivo())) {
+        if (!alumno.getActivo()) {
             throw new RecursoInactivoException("alumno", alumno.getId());
         }
 
@@ -70,7 +70,7 @@ public class InscripcionExamenService {
         Examen examen = examenRepository.findById(request.getExamenId())
                 .orElseThrow(() -> new RecursoNoEncontradoException("examen", request.getExamenId()));
 
-        if (!Boolean.TRUE.equals(examen.getActivo())) {
+        if (!examen.getActivo()) {
             throw new RecursoInactivoException("examen", examen.getId());
         }
 
@@ -112,7 +112,7 @@ public class InscripcionExamenService {
         InscripcionExamen inscripcion = inscripcionExamenRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("inscripcion a examen", id));
 
-        if (!Boolean.TRUE.equals(inscripcion.getActivo())) {
+        if (!inscripcion.getActivo()) {
             throw new RecursoInactivoException("inscripcion a examen", id);
         }
 
@@ -129,7 +129,7 @@ public class InscripcionExamenService {
         InscripcionExamen inscripcion = inscripcionExamenRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("inscripcion a examen", id));
 
-        if (!Boolean.TRUE.equals(inscripcion.getActivo())) {
+        if (!inscripcion.getActivo()) {
             throw new RecursoInactivoException("inscripcion a examen", id);
         }
 
