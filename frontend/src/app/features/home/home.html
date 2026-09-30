@@ -67,6 +67,15 @@
           <p class="card-desc">Inscripción a exámenes y carga de notas de los alumnos.</p>
         </div>
       </a>
+      @if (authService.tienePermiso([Rol.ALUMNO])) {
+        <a routerLink="/historia-academica" class="home-card">
+          <div class="card-icon">🎓</div>
+          <div class="card-content">
+            <h3 class="card-title">Mi historia académica</h3>
+            <p class="card-desc">Materias cursadas, estado y notas de los exámenes rendidos.</p>
+          </div>
+        </a>
+      }
     </div>
   </main>
 </div>

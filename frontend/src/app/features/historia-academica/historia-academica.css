@@ -1,0 +1,189 @@
+:host {
+  --color-ink: #16213a;
+  --color-muted: #5c6b85;
+  --color-accent: #c9a227;
+  --color-border: #e3e6ec;
+  --color-danger: #b3261e;
+
+  display: block;
+  min-height: 100dvh;
+  padding: 2.5rem;
+  box-sizing: border-box;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #f6f7f9;
+  color: var(--color-ink);
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 1.5rem;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  text-decoration: none;
+}
+
+.back-link:hover {
+  color: var(--color-ink);
+}
+
+.historia-header {
+  margin-bottom: 1.5rem;
+}
+
+.historia-title {
+  margin: 0 0 0.25rem;
+  font-size: 1.5rem;
+}
+
+.historia-subtitle {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+
+.historia-loading,
+.historia-vacio {
+  color: var(--color-muted);
+}
+
+.alert-error {
+  padding: 0.6rem 0.85rem;
+  border-radius: 0.5rem;
+  background: rgba(179, 38, 30, 0.08);
+  color: var(--color-danger);
+  font-size: 0.85rem;
+}
+
+.resumen-chips {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.75rem;
+}
+
+.chip {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 0.7rem;
+  padding: 0.85rem 1.25rem;
+  min-width: 140px;
+}
+
+.chip-valor {
+  display: block;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.chip-label {
+  font-size: 0.78rem;
+  color: var(--color-muted);
+}
+
+.materias-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 640px;
+}
+
+.materia-card {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 0.9rem;
+  padding: 1.25rem 1.5rem;
+}
+
+.materia-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.materia-codigo {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--color-muted);
+  letter-spacing: 0.03em;
+}
+
+.materia-nombre {
+  margin: 0.1rem 0 0.2rem;
+  font-size: 1.05rem;
+}
+
+.materia-periodo {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--color-muted);
+}
+
+.estado-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  border-radius: 999px;
+  padding: 0.25rem 0.65rem;
+  white-space: nowrap;
+  background: #eef2f6;
+  color: var(--color-muted);
+}
+
+.estado-badge[data-estado='INSCRIPTO'] {
+  background: rgba(30, 100, 220, 0.12);
+  color: #1a56b2;
+}
+
+.estado-badge[data-estado='REGULAR'] {
+  background: rgba(201, 162, 39, 0.15);
+  color: #7a5f0f;
+}
+
+.estado-badge[data-estado='LIBRE'] {
+  background: rgba(140, 90, 200, 0.12);
+  color: #6a3fa0;
+}
+
+.estado-badge[data-estado='APROBADO'] {
+  background: rgba(27, 122, 62, 0.12);
+  color: #1b7a3e;
+}
+
+.estado-badge[data-estado='DESAPROBADO'] {
+  background: rgba(180, 40, 40, 0.12);
+  color: #a82020;
+}
+
+.notas-tabla {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.notas-tabla th,
+.notas-tabla td {
+  text-align: left;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.85rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.notas-tabla th {
+  color: var(--color-muted);
+  font-weight: 600;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+.materia-sin-notas {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
+@media (max-width: 520px) {
+  :host {
+    padding: 1.25rem;
+  }
+}

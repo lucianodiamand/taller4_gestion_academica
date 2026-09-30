@@ -1,0 +1,80 @@
+<div class="historia-page">
+  <a routerLink="/" class="back-link">← Volver al inicio</a>
+
+  <header class="historia-header">
+    <h1 class="historia-title">Mi historia académica</h1>
+    <p class="historia-subtitle">
+      Legajo {{ authService.usuario()?.legajo }}
+    </p>
+  </header>
+
+  @if (cargando()) {
+    <p class="historia-loading">Cargando tu historia académica…</p>
+  } @else if (error()) {
+    <p class="alert alert-error" role="alert">{{ error() }}</p>
+  } @else {
+
+    <div class="resumen-chips">
+      <div class="chip">
+        <span class="chip-valor">{{ materias().length }}</span>
+        <span class="chip-label">Materias cursadas</span>
+      </div>
+      <div class="chip">
+        <span class="chip-valor">{{ materiasAprobadas() }}</span>
+        <span class="chip-label">Materias aprobadas</span>
+      </div>
+      @if (promedioFinales() !== null) {
+        <div class="chip">
+          <span class="chip-valor">{{ promedioFinales() }}</span>
+          <span class="chip-label">Promedio de finales</span>
+        </div>
+      }
+    </div>
+
+    @if (materias().length === 0) {
+      <p class="historia-vacio">Todavía no tenés materias cursadas.</p>
+    } @else {
+      <div class="materias-lista">
+        @for (materia of materias(); track materia.cursoId) {
+          <section class="materia-card">
+            <header class="materia-card-header">
+              <div>
+                <p class="materia-codigo">{{ materia.materiaCodigo }}</p>
+                <h2 class="materia-nombre">{{ materia.materiaNombre }}</h2>
+                <p class="materia-periodo">
+                  {{ materia.anio }} · {{ materia.cuatrimestre }}° cuatrimestre · Comisión {{ materia.comision }}
+                </p>
+              </div>
+              <span class="estado-badge" [attr.data-estado]="materia.estado">
+                {{ materia.estado }}
+              </span>
+            </header>
+
+            @if (materia.notas.length > 0) {
+              <table class="notas-tabla">
+                <thead>
+                  <tr>
+                    <th>Examen</th>
+                    <th>Fecha</th>
+                    <th>Nota</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (nota of materia.notas; track nota.fecha + nota.tipo) {
+                    <tr>
+                      <td>{{ nota.tipo }}</td>
+                      <td>{{ nota.fecha }}</td>
+                      <td>{{ nota.nota ?? 'Pendiente' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            } @else {
+              <p class="materia-sin-notas">Todavía no rendiste exámenes de esta materia.</p>
+            }
+          </section>
+        }
+      </div>
+    }
+  }
+</div>

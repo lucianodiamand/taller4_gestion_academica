@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 export enum EstadoInscripcion {
   INSCRIPTO = 'INSCRIPTO',
   REGULAR = 'REGULAR',
+  LIBRE = 'LIBRE',
   APROBADO = 'APROBADO',
   DESAPROBADO = 'DESAPROBADO',
   CANCELADO = 'CANCELADO',
