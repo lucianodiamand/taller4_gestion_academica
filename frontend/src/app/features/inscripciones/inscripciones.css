@@ -36,6 +36,11 @@
   color: #7a5f0f;
 }
 
+.estado-badge[data-estado='LIBRE'] {
+  background: rgba(140, 90, 200, 0.12);
+  color: #6a3fa0;
+}
+
 .estado-badge[data-estado='APROBADO'] {
   background: rgba(27, 122, 62, 0.12);
   color: #1b7a3e;
