@@ -103,6 +103,14 @@ public class InscripcionExamenService {
                     .map(this::convertirAResponse)
                     .toList();
         }
+        if (esProfesor()) {
+            Usuario profesor = obtenerUsuarioActual();
+            return inscripcionExamenRepository.findByActivoTrue().stream()
+                    .filter(ie -> ie.getExamen().getCurso().getProfesor() != null
+                            && ie.getExamen().getCurso().getProfesor().getId().equals(profesor.getId()))
+                    .map(this::convertirAResponse)
+                    .toList();
+        }
         return inscripcionExamenRepository.findByActivoTrue().stream()
                 .map(this::convertirAResponse)
                 .toList();
@@ -115,6 +123,8 @@ public class InscripcionExamenService {
         if (!inscripcion.getActivo()) {
             throw new RecursoInactivoException("inscripcion a examen", id);
         }
+
+        validarProfesorDelCurso(inscripcion.getExamen().getCurso());
 
         if (inscripcion.getExamen().getFecha().isAfter(LocalDate.now())) {
             throw new IllegalArgumentException("No se puede cargar la nota antes de la fecha del examen");
@@ -164,6 +174,22 @@ public class InscripcionExamenService {
         String legajo = (String) auth.getPrincipal();
         return usuarioRepository.findByLegajo(legajo)
                 .orElseThrow(() -> new RecursoNoEncontradoException("usuario", null));
+    }
+
+    private boolean esProfesor() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_PROFESOR"));
+    }
+
+    private void validarProfesorDelCurso(Curso curso) {
+        if (!esProfesor()) {
+            return;
+        }
+        Usuario actual = obtenerUsuarioActual();
+        if (curso.getProfesor() == null || !curso.getProfesor().getId().equals(actual.getId())) {
+            throw new AccessDeniedException("Solo el profesor de la comision puede realizar esta accion");
+        }
     }
 
     private InscripcionExamenResponse convertirAResponse(InscripcionExamen inscripcion) {

@@ -107,6 +107,7 @@ public class InscripcionService {
     public List<InscripcionResponse> listarInscripciones() {
         return inscripcionRepository.findByActivoTrue()
                 .stream()
+                .filter(i -> esProfesorDelCurso(i.getCurso()))
                 .map(this::convertirAResponse)
                 .toList();
     }
@@ -137,6 +138,8 @@ public class InscripcionService {
                     id
             );
         }
+
+        validarProfesorDelCurso(inscripcion.getCurso());
 
         return convertirAResponse(inscripcion);
     }
@@ -235,6 +238,8 @@ public class InscripcionService {
             );
         }
 
+        validarProfesorDelCurso(inscripcion.getCurso());
+
         inscripcion.setEstado(request.getEstado());
 
         return convertirAResponse(
@@ -282,6 +287,33 @@ public class InscripcionService {
                         "Un alumno solo puede inscribirse a si mismo"
                 );
             }
+        }
+    }
+
+    private boolean esProfesor() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_PROFESOR"));
+    }
+
+    private Usuario obtenerUsuarioActual() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String legajo = (String) auth.getPrincipal();
+        return usuarioRepository.findByLegajo(legajo)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario", null));
+    }
+
+    private boolean esProfesorDelCurso(Curso curso) {
+        if (!esProfesor()) {
+            return true;
+        }
+        Usuario actual = obtenerUsuarioActual();
+        return curso.getProfesor() != null && curso.getProfesor().getId().equals(actual.getId());
+    }
+
+    private void validarProfesorDelCurso(Curso curso) {
+        if (!esProfesorDelCurso(curso)) {
+            throw new AccessDeniedException("Solo el profesor de la comision puede realizar esta accion");
         }
     }
 

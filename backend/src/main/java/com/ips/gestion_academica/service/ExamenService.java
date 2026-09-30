@@ -8,9 +8,14 @@ import com.ips.gestion_academica.exception.RecursoInactivoException;
 import com.ips.gestion_academica.exception.RecursoNoEncontradoException;
 import com.ips.gestion_academica.model.Curso;
 import com.ips.gestion_academica.model.Examen;
+import com.ips.gestion_academica.model.Usuario;
 import com.ips.gestion_academica.repository.CursoRepository;
 import com.ips.gestion_academica.repository.ExamenRepository;
+import com.ips.gestion_academica.repository.UsuarioRepository;
 
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,18 +25,22 @@ public class ExamenService {
 
     private final ExamenRepository examenRepository;
     private final CursoRepository cursoRepository;
+    private final UsuarioRepository usuarioRepository;
 
     public ExamenService(
             ExamenRepository examenRepository,
-            CursoRepository cursoRepository) {
+            CursoRepository cursoRepository,
+            UsuarioRepository usuarioRepository) {
 
         this.examenRepository = examenRepository;
         this.cursoRepository = cursoRepository;
+        this.usuarioRepository = usuarioRepository;
     }
 
     public List<ExamenResponse> listarExamenes() {
         return examenRepository.findByActivoTrue()
                 .stream()
+                .filter(e -> esProfesorDelCurso(e.getCurso()))
                 .map(this::convertirAResponse)
                 .toList();
     }
@@ -48,6 +57,8 @@ public class ExamenService {
                     id
             );
         }
+
+        validarProfesorDelCurso(examen.getCurso());
 
         return convertirAResponse(examen);
     }
@@ -67,6 +78,8 @@ public class ExamenService {
                     curso.getId()
             );
         }
+
+        validarProfesorDelCurso(curso);
 
         if (examenRepository
                 .existsByCursoIdAndFechaAndTipo(
@@ -108,6 +121,8 @@ public class ExamenService {
             );
         }
 
+        validarProfesorDelCurso(examen.getCurso());
+
         Curso curso = cursoRepository.findById(request.getCursoId())
                 .orElseThrow(() ->
                         new RecursoNoEncontradoException(
@@ -122,6 +137,8 @@ public class ExamenService {
                     curso.getId()
             );
         }
+
+        validarProfesorDelCurso(curso);
 
         if (examenRepository
                 .existsByCursoIdAndFechaAndTipoAndIdNot(
@@ -159,8 +176,37 @@ public class ExamenService {
             );
         }
 
+        validarProfesorDelCurso(examen.getCurso());
+
         examen.setActivo(false);
         examenRepository.save(examen);
+    }
+
+    private boolean esProfesor() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_PROFESOR"));
+    }
+
+    private Usuario obtenerUsuarioActual() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String legajo = (String) auth.getPrincipal();
+        return usuarioRepository.findByLegajo(legajo)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario", null));
+    }
+
+    private boolean esProfesorDelCurso(Curso curso) {
+        if (!esProfesor()) {
+            return true;
+        }
+        Usuario actual = obtenerUsuarioActual();
+        return curso.getProfesor() != null && curso.getProfesor().getId().equals(actual.getId());
+    }
+
+    private void validarProfesorDelCurso(Curso curso) {
+        if (!esProfesorDelCurso(curso)) {
+            throw new AccessDeniedException("Solo el profesor de la comision puede realizar esta accion");
+        }
     }
 
     private ExamenResponse convertirAResponse(Examen examen) {
