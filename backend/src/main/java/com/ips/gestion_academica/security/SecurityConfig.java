@@ -11,12 +11,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.ips.gestion_academica.util.Json;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 public class SecurityConfig {
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -36,14 +38,14 @@ public class SecurityConfig {
                 .authenticationEntryPoint((request, response, authException) -> {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                    response.getWriter().write(Json.stringify(
-                            Map.of("error", "Debe iniciar sesion para acceder a este recurso")));
+                    objectMapper.writeValue(response.getWriter(),
+                            Map.of("error", "Debe iniciar sesion para acceder a este recurso"));
                 })
                 .accessDeniedHandler((request, response, accessDeniedException) -> {
                     response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                    response.getWriter().write(Json.stringify(
-                            Map.of("error", "No tiene permisos para realizar esta accion")));
+                    objectMapper.writeValue(response.getWriter(),
+                            Map.of("error", "No tiene permisos para realizar esta accion"));
                 })
             )
             .authorizeHttpRequests(auth -> auth
