@@ -47,6 +47,14 @@ export const routes: Routes = [
       import('./features/perfil/perfil').then((m) => m.Perfil),
   },
   {
+    path: 'historia-academica',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/historia-academica/historia-academica').then(
+        (m) => m.HistoriaAcademica,
+      ),
+  },
+  {
     path: 'inscripciones',
     canActivate: [authGuard],
     loadComponent: () =>

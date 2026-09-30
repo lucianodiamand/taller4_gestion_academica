@@ -85,6 +85,7 @@ export class Inscripciones implements OnInit {
   protected readonly estadosPermitidos = [
     EstadoInscripcion.INSCRIPTO,
     EstadoInscripcion.REGULAR,
+    EstadoInscripcion.LIBRE,
     EstadoInscripcion.APROBADO,
     EstadoInscripcion.DESAPROBADO,
   ];
