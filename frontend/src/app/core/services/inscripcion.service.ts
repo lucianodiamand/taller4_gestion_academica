@@ -23,6 +23,7 @@ export interface InscripcionCurso {
   anio: number;
   cuatrimestre: number;
   comision: string;
+  materiaNombre?: string;
 }
 
 export interface Inscripcion {
@@ -35,7 +36,7 @@ export interface Inscripcion {
 }
 
 export interface InscripcionRequest {
-  alumnoId: number;
+  alumnoId?: number;
   cursoId: number;
 }
 

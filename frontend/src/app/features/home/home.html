@@ -52,15 +52,13 @@
         </div>
       </a>
 
-      @if (authService.tienePermiso([Rol.ADMIN, Rol.PROFESOR])) {
-        <a routerLink="/inscripciones" class="home-card">
-          <div class="card-icon">📋</div>
-          <div class="card-content">
-            <h3 class="card-title">Inscripciones</h3>
-            <p class="card-desc">Inscripción de alumnos a los cursos y seguimiento de estados.</p>
-          </div>
-        </a>
-      }
+      <a routerLink="/inscripciones" class="home-card">
+        <div class="card-icon">📋</div>
+        <div class="card-content">
+          <h3 class="card-title">Inscripciones a cursos</h3>
+          <p class="card-desc">Inscripción a cursos y seguimiento de cursadas.</p>
+        </div>
+      </a>
 
       <a routerLink="/inscripciones-examen" class="home-card">
         <div class="card-icon">🎓</div>

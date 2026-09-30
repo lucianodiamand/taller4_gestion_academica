@@ -36,11 +36,17 @@ export class Inscripciones implements OnInit {
   private readonly fb = inject(FormBuilder);
 
   // permisos segun lo que permite el backend
+  protected get esAdmin(): boolean {
+    return this.authService.tienePermiso([Rol.ADMIN]);
+  }
+  protected get esAlumno(): boolean {
+    return this.authService.tienePermiso([Rol.ALUMNO]);
+  }
   protected get puedeVer(): boolean {
-    return this.authService.tienePermiso([Rol.ADMIN, Rol.PROFESOR]);
+    return true;
   }
   protected get puedeCrear(): boolean {
-    return this.authService.tienePermiso([Rol.ADMIN]);
+    return this.authService.tienePermiso([Rol.ADMIN, Rol.ALUMNO]);
   }
   protected get puedeGestionarEstado(): boolean {
     return this.authService.tienePermiso([Rol.ADMIN, Rol.PROFESOR]);
@@ -70,6 +76,18 @@ export class Inscripciones implements OnInit {
   protected readonly filasPaginadas = computed(() => {
     const inicio = this.paginaActual() * this.paginator.tamanoPagina();
     return this.filas().slice(inicio, inicio + this.paginator.tamanoPagina());
+  });
+
+  protected readonly cursosDisponibles = computed(() => {
+    if (!this.esAlumno) {
+      return this.cursos();
+    }
+    const yaInscripto = new Set(
+      this.inscripciones()
+        .filter((i) => i.activo)
+        .map((i) => i.curso.id),
+    );
+    return this.cursos().filter((c) => !yaInscripto.has(c.id));
   });
 
   protected irPagina(pagina: number): void {
@@ -108,7 +126,11 @@ export class Inscripciones implements OnInit {
     this.cargando.set(true);
     this.error.set(null);
 
-    this.inscripcionService.listar().subscribe({
+    const peticion = this.esAlumno
+      ? this.inscripcionService.listarMias()
+      : this.inscripcionService.listar();
+
+    peticion.subscribe({
       next: (data) => {
         this.inscripciones.set(data);
         this.cargando.set(false);
@@ -128,9 +150,17 @@ export class Inscripciones implements OnInit {
     this.inscripcionEnEdicion = null;
     this.errorFormulario.set(null);
     this.form.reset({ alumnoId: null, cursoId: null });
-    this.modo.set('crear');
+
+    if (this.esAdmin) {
+      this.form.controls.alumnoId.setValidators(Validators.required);
+      this.cargarAlumnos();
+    } else {
+      this.form.controls.alumnoId.clearValidators();
+    }
+    this.form.controls.alumnoId.updateValueAndValidity();
+
     this.cargarCursos();
-    this.cargarAlumnos();
+    this.modo.set('crear');
   }
 
   abrirFormularioEstado(inscripcion: Inscripcion): void {
@@ -153,15 +183,24 @@ export class Inscripciones implements OnInit {
     }
 
     const valores = this.form.getRawValue();
-    if (!valores.alumnoId || !valores.cursoId) {
-      this.errorFormulario.set('Debés seleccionar un alumno y un curso.');
+
+    if (!valores.cursoId) {
+      this.errorFormulario.set('Debés seleccionar un curso.');
+      return;
+    }
+
+    if (this.esAdmin && !valores.alumnoId) {
+      this.errorFormulario.set('Debés seleccionar un alumno.');
       return;
     }
 
     const payload: InscripcionRequest = {
-      alumnoId: Number(valores.alumnoId),
       cursoId: Number(valores.cursoId),
     };
+
+    if (this.esAdmin && valores.alumnoId) {
+      payload.alumnoId = Number(valores.alumnoId);
+    }
 
     this.guardando.set(true);
     this.errorFormulario.set(null);

@@ -44,13 +44,22 @@ public class InscripcionService {
 
     public InscripcionResponse crearInscripcion(InscripcionRequest request) {
 
-        Usuario alumno = usuarioRepository.findById(request.getAlumnoId())
-                .orElseThrow(() ->
-                        new RecursoNoEncontradoException(
-                                "Alumno",
-                                request.getAlumnoId()
-                        )
-                );
+        Usuario alumno;
+        if (request.getAlumnoId() == null) {
+            if (esAlumno()) {
+                alumno = obtenerUsuarioActual();
+            } else {
+                throw new IllegalArgumentException("Debe seleccionar un alumno");
+            }
+        } else {
+            alumno = usuarioRepository.findById(request.getAlumnoId())
+                    .orElseThrow(() ->
+                            new RecursoNoEncontradoException(
+                                    "Alumno",
+                                    request.getAlumnoId()
+                            )
+                    );
+        }
 
         Curso curso = cursoRepository.findById(request.getCursoId())
                 .orElseThrow(() ->
@@ -290,6 +299,12 @@ public class InscripcionService {
         }
     }
 
+    private boolean esAlumno() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ALUMNO"));
+    }
+
     private boolean esProfesor() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         return auth != null && auth.getAuthorities().stream()
@@ -349,7 +364,8 @@ public class InscripcionService {
                 curso.getId(),
                 curso.getAnio(),
                 curso.getCuatrimestre(),
-                curso.getComision()
+                curso.getComision(),
+                curso.getMateria() != null ? curso.getMateria().getNombre() : null
         );
     }
 }

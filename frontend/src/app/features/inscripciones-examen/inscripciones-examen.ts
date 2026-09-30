@@ -58,7 +58,9 @@ export class InscripcionesExamen implements OnInit {
   protected readonly cargando = signal(false);
   protected readonly error = signal<string | null>(null);
 
-  protected readonly tab = signal<'general' | 'inscritos' | 'finalizados'>('inscritos');
+  protected readonly tab = signal<'general' | 'inscritos' | 'finalizados'>(
+    this.authService.tienePermiso([Rol.ALUMNO]) ? 'general' : 'inscritos',
+  );
   protected readonly termino = signal('');
   protected readonly sorter = new TableSorter();
   protected readonly paginator = new Paginator();

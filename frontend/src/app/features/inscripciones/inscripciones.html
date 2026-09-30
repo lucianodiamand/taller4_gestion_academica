@@ -5,12 +5,14 @@
 
   <header class="page-header">
     <div>
-      <h1 class="page-title">Inscripciones</h1>
-      <p class="page-subtitle">Inscripción de alumnos a los cursos</p>
+      <h1 class="page-title">{{ esAlumno ? 'Mis inscripciones a cursos' : 'Inscripciones a cursos' }}</h1>
+      <p class="page-subtitle">
+        {{ esAlumno ? 'Cursos en los que estás inscripto y estado de cursada' : 'Inscripción de alumnos a los cursos y seguimiento de estados' }}
+      </p>
     </div>
     @if (puedeCrear) {
       <button class="btn btn-primary" type="button" (click)="abrirFormularioCrear()">
-        + Nueva inscripción
+        {{ esAlumno ? '+ Inscribirme a un curso' : '+ Nueva inscripción' }}
       </button>
     }
   </header>
@@ -19,15 +21,13 @@
     <p class="alert" role="alert">{{ error() }}</p>
   }
 
-  @if (!puedeVer) {
-    <p class="alert" role="alert">No tenés permiso para ver las inscripciones.</p>
-  } @else if (cargando()) {
+  @if (cargando()) {
     <p class="page-loading">Cargando inscripciones…</p>
   } @else {
     <div class="table-toolbar">
       <app-search-bar
         [(termino)]="termino"
-        placeholder="Buscar por alumno, legajo, curso, fecha, estado…"
+        placeholder="Buscar por materia, curso, fecha, estado…"
       />
       <span class="table-count">
         {{ filas().length }} de {{ inscripciones().length }} inscripciones
@@ -37,14 +37,16 @@
     <table class="data-table">
       <thead>
         <tr>
-          <th class="sortable" (click)="sorter.toggle('alumno.apellido')">
-            Alumno<span class="sort-arrow">{{ sorter.flecha('alumno.apellido') }}</span>
-          </th>
-          <th class="sortable" (click)="sorter.toggle('alumno.legajo')">
-            Legajo<span class="sort-arrow">{{ sorter.flecha('alumno.legajo') }}</span>
-          </th>
+          @if (!esAlumno) {
+            <th class="sortable" (click)="sorter.toggle('alumno.apellido')">
+              Alumno<span class="sort-arrow">{{ sorter.flecha('alumno.apellido') }}</span>
+            </th>
+            <th class="sortable" (click)="sorter.toggle('alumno.legajo')">
+              Legajo<span class="sort-arrow">{{ sorter.flecha('alumno.legajo') }}</span>
+            </th>
+          }
           <th class="sortable" (click)="sorter.toggle('curso.anio')">
-            Curso<span class="sort-arrow">{{ sorter.flecha('curso.anio') }}</span>
+            Curso / Materia<span class="sort-arrow">{{ sorter.flecha('curso.anio') }}</span>
           </th>
           <th class="sortable" (click)="sorter.toggle('fechaInscripcion')">
             Fecha<span class="sort-arrow">{{ sorter.flecha('fechaInscripcion') }}</span>
@@ -52,19 +54,26 @@
           <th class="sortable" (click)="sorter.toggle('estado')">
             Estado<span class="sort-arrow">{{ sorter.flecha('estado') }}</span>
           </th>
-          <th>Acciones</th>
+          @if (puedeGestionarEstado || puedeDarBaja) {
+            <th>Acciones</th>
+          }
         </tr>
       </thead>
       <tbody>
         @for (inscripcion of filasPaginadas(); track inscripcion.id) {
           <tr>
+            @if (!esAlumno) {
+              <td>
+                <strong>{{ inscripcion.alumno.nombre }} {{ inscripcion.alumno.apellido }}</strong>
+              </td>
+              <td>{{ inscripcion.alumno.legajo }}</td>
+            }
             <td>
-              <strong>{{ inscripcion.alumno.nombre }} {{ inscripcion.alumno.apellido }}</strong>
-            </td>
-            <td>{{ inscripcion.alumno.legajo }}</td>
-            <td>
-              {{ inscripcion.curso.anio }} - {{ inscripcion.curso.cuatrimestre }}º cuat.
-              <span class="curso-comision">({{ inscripcion.curso.comision }})</span>
+              @if (inscripcion.curso.materiaNombre) {
+                <strong>{{ inscripcion.curso.materiaNombre }}</strong> ·
+              }
+              {{ inscripcion.curso.anio }} / C{{ inscripcion.curso.cuatrimestre }}
+              <span class="curso-comision">(Comisión {{ inscripcion.curso.comision }})</span>
             </td>
             <td class="col-fecha">{{ inscripcion.fechaInscripcion }}</td>
             <td>
@@ -72,25 +81,27 @@
                 {{ inscripcion.estado }}
               </span>
             </td>
-            <td class="row-acciones">
-              @if (puedeGestionarEstado) {
-                <button class="btn btn-edit" type="button" (click)="abrirFormularioEstado(inscripcion)">
-                  Cambiar estado
-                </button>
-              }
-              @if (puedeDarBaja) {
-                <button class="btn btn-solid-danger" type="button" (click)="darDeBaja(inscripcion)">
-                  Cancelar
-                </button>
-              }
-            </td>
+            @if (puedeGestionarEstado || puedeDarBaja) {
+              <td class="row-acciones">
+                @if (puedeGestionarEstado) {
+                  <button class="btn btn-edit" type="button" (click)="abrirFormularioEstado(inscripcion)">
+                    Cambiar estado
+                  </button>
+                }
+                @if (puedeDarBaja) {
+                  <button class="btn btn-solid-danger" type="button" (click)="darDeBaja(inscripcion)">
+                    Cancelar
+                  </button>
+                }
+              </td>
+            }
           </tr>
         } @empty {
           <tr>
-            <td colspan="6" class="cell-vacio">
+            <td [attr.colspan]="(!esAlumno ? 5 : 3) + (puedeGestionarEstado || puedeDarBaja ? 1 : 0)" class="cell-vacio">
               {{
                 inscripciones().length === 0
-                  ? 'No hay inscripciones cargadas todavía.'
+                  ? (esAlumno ? 'No estás inscripto a ningún curso todavía.' : 'No hay inscripciones cargadas todavía.')
                   : 'No hay resultados para tu búsqueda.'
               }}
             </td>
@@ -109,32 +120,34 @@
   @if (modo() === 'crear') {
     <div class="modal-overlay" (click)="cerrarFormulario()">
       <div class="modal" (click)="$event.stopPropagation()">
-        <h2 class="modal-title">Nueva inscripción</h2>
+        <h2 class="modal-title">{{ esAlumno ? 'Inscribirme a un curso' : 'Nueva inscripción' }}</h2>
 
         <form class="form" [formGroup]="form" (ngSubmit)="guardar()" novalidate>
-          <label class="form-field">
-            <span class="form-label">Alumno</span>
-            <select class="form-input" formControlName="alumnoId">
-              <option [ngValue]="null" disabled>-- Seleccioná un alumno --</option>
-              @for (alumno of alumnos(); track alumno.id) {
-                <option [ngValue]="alumno.id">
-                  {{ alumno.nombre }} {{ alumno.apellido }} (Legajo: {{ alumno.legajo }})
-                </option>
+          @if (esAdmin) {
+            <label class="form-field">
+              <span class="form-label">Alumno</span>
+              <select class="form-input" formControlName="alumnoId">
+                <option [ngValue]="null" disabled>-- Seleccioná un alumno --</option>
+                @for (alumno of alumnos(); track alumno.id) {
+                  <option [ngValue]="alumno.id">
+                    {{ alumno.nombre }} {{ alumno.apellido }} (Legajo: {{ alumno.legajo }})
+                  </option>
+                }
+              </select>
+              @if (form.controls.alumnoId.touched && form.controls.alumnoId.invalid) {
+                <span class="form-error">Debés seleccionar un alumno</span>
               }
-            </select>
-            @if (form.controls.alumnoId.touched && form.controls.alumnoId.invalid) {
-              <span class="form-error">Debés seleccionar un alumno</span>
-            }
-            @if (alumnos().length === 0) {
-              <span class="form-hint">No hay alumnos registrados en el sistema.</span>
-            }
-          </label>
+              @if (alumnos().length === 0) {
+                <span class="form-hint">No hay alumnos registrados en el sistema.</span>
+              }
+            </label>
+          }
 
           <label class="form-field">
             <span class="form-label">Curso</span>
             <select class="form-input" formControlName="cursoId">
               <option [ngValue]="null" disabled>-- Seleccioná un curso --</option>
-              @for (curso of cursos(); track curso.id) {
+              @for (curso of cursosDisponibles(); track curso.id) {
                 <option [ngValue]="curso.id">
                   {{ curso.materia.nombre }} - Comisión {{ curso.comision }} ({{ curso.anio }} / C{{ curso.cuatrimestre }})
                 </option>
@@ -143,8 +156,8 @@
             @if (form.controls.cursoId.touched && form.controls.cursoId.invalid) {
               <span class="form-error">Debés seleccionar un curso</span>
             }
-            @if (cursos().length === 0) {
-              <span class="form-hint">No hay cursos disponibles en el sistema.</span>
+            @if (cursosDisponibles().length === 0) {
+              <span class="form-hint">No hay cursos disponibles para inscribirte.</span>
             }
           </label>
 
@@ -157,7 +170,7 @@
               Cancelar
             </button>
             <button class="btn btn-primary" type="submit" [disabled]="guardando()">
-              {{ guardando() ? 'Guardando…' : 'Guardar inscripción' }}
+              {{ guardando() ? 'Guardando…' : (esAlumno ? 'Inscribirme' : 'Guardar inscripción') }}
             </button>
           </div>
         </form>

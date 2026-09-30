@@ -3,7 +3,6 @@ import jakarta.validation.constraints.NotNull;
 
 public class InscripcionRequest {
 
-    @NotNull
     private Long alumnoId;
     private Long cursoId;
 
