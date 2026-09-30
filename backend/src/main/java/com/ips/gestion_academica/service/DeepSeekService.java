@@ -48,8 +48,10 @@ public class DeepSeekService {
         - sus docentes
 
         ## 2. Datos reales, nunca inventados
-        - Usá siempre las herramientas para obtener datos reales. NUNCA inventes fechas, notas, comisiones ni ningún otro dato.
-        - Si una herramienta falla, devuelve vacío o no alcanza para responder, decilo con claridad ("no pude obtener esa información"). No rellenes huecos con suposiciones.
+        - Usá siempre las herramientas para obtener datos reales. NUNCA inventes fechas, notas, materias, comisiones, docentes ni ningún otro dato.
+        - Si una herramienta devuelve que no hay registros o un mensaje indicando que no posee notas/exámenes/cursos, debés responder con total claridad y exactitud que el alumno NO tiene notas, exámenes o inscripciones registradas en el sistema hasta el momento.
+        - JAMÁS proporciones ejemplos hipotéticos, ni datos simulados, ni suposiciones. Si no hay datos, afirmá taxativamente que no hay datos registrados.
+        - Si una herramienta falla o no alcanza para responder, decilo con claridad ("no pude obtener esa información"). No rellenes huecos con suposiciones.
         - No reveles nombres de herramientas, parámetros, ids internos ni códigos de error técnicos: traducí siempre a lenguaje natural.
 
         ## 3. Privacidad y aislamiento entre alumnos
@@ -127,6 +129,7 @@ public class DeepSeekService {
             }
         }
 
+        System.out.println("[academ.ia] Consulta recibida de " + legajo + ": " + mensaje);
         messages.addObject().put("role", "user").put("content", mensaje);
 
         ArrayNode tools = herramientas();
@@ -134,6 +137,7 @@ public class DeepSeekService {
         for (int iter = 0; iter < 6; iter++) {
             ObjectNode body = objectMapper.createObjectNode();
             body.put("model", model);
+            body.put("temperature", 0.0);
             body.set("messages", messages);
             body.set("tools", tools);
             body.put("tool_choice", "auto");
@@ -142,6 +146,7 @@ public class DeepSeekService {
             try {
                 responseNode = llamarDeepSeek(body);
             } catch (Exception e) {
+                System.err.println("[academ.ia] Error al contactar DeepSeek: " + e.getMessage());
                 return "Ocurrio un error al contactar con el asistente. Intenta de nuevo.";
             }
 
@@ -150,6 +155,7 @@ public class DeepSeekService {
 
             if (toolCalls == null || toolCalls.isNull() || toolCalls.isEmpty()) {
                 String contenido = messageNode.path("content").asText(null);
+                System.out.println("[academ.ia] Respuesta final (" + legajo + "): " + contenido);
                 return (contenido == null || contenido.isBlank())
                         ? "No pude generar una respuesta."
                         : contenido;
@@ -230,13 +236,16 @@ public class DeepSeekService {
                 case "get_mis_docentes" -> resultado = getMisDocentes(usuario);
                 default -> resultado = Map.of("error", "herramienta desconocida");
             }
-            return objectMapper.writeValueAsString(resultado);
+            String resultadoJson = objectMapper.writeValueAsString(resultado);
+            System.out.println("[academ.ia] Tool " + nombre + " (" + usuario.getLegajo() + "): " + resultadoJson);
+            return resultadoJson;
         } catch (Exception e) {
+            System.err.println("[academ.ia] Error en tool " + nombre + ": " + e.getMessage());
             return "{\"error\":\"No se pudo obtener la informacion.\"}";
         }
     }
 
-    private List<Map<String, Object>> getMisCursos(Usuario usuario) {
+    private Object getMisCursos(Usuario usuario) {
         List<Map<String, Object>> cursos = new ArrayList<>();
         for (Inscripcion inscripcion : inscripcionRepository.findByAlumnoId(usuario.getId())) {
             if (!inscripcion.getActivo()) {
@@ -248,14 +257,17 @@ public class DeepSeekService {
             item.put("comision", curso.getComision());
             item.put("anio", curso.getAnio());
             item.put("cuatrimestre", curso.getCuatrimestre());
-            item.put("docente", curso.getProfesor().getNombre() + " " + curso.getProfesor().getApellido());
+            item.put("docente", curso.getProfesor() != null ? curso.getProfesor().getNombre() + " " + curso.getProfesor().getApellido() : "Sin asignar");
             item.put("estado", inscripcion.getEstado().name());
             cursos.add(item);
+        }
+        if (cursos.isEmpty()) {
+            return Map.of("mensaje", "El alumno no esta inscripto en ningun curso actualmente.");
         }
         return cursos;
     }
 
-    private List<Map<String, Object>> getProximosExamenes(Usuario usuario) {
+    private Object getProximosExamenes(Usuario usuario) {
         List<Map<String, Object>> examenes = new ArrayList<>();
         for (InscripcionExamen ie : inscripcionExamenRepository.findByAlumnoId(usuario.getId())) {
             if (!ie.getActivo()) {
@@ -273,10 +285,13 @@ public class DeepSeekService {
             item.put("descripcion", examen.getDescripcion() == null ? "" : examen.getDescripcion());
             examenes.add(item);
         }
+        if (examenes.isEmpty()) {
+            return Map.of("mensaje", "El alumno no tiene proximos examenes agendados.");
+        }
         return examenes;
     }
 
-    private List<Map<String, Object>> getMisNotas(Usuario usuario) {
+    private Object getMisNotas(Usuario usuario) {
         List<Map<String, Object>> notas = new ArrayList<>();
         for (InscripcionExamen ie : inscripcionExamenRepository.findByAlumnoId(usuario.getId())) {
             if (!ie.getActivo() || ie.getNota() == null) {
@@ -290,6 +305,9 @@ public class DeepSeekService {
             item.put("nota", ie.getNota());
             notas.add(item);
         }
+        if (notas.isEmpty()) {
+            return Map.of("mensaje", "El alumno no tiene notas registradas en el sistema.");
+        }
         return notas;
     }
 
@@ -300,6 +318,13 @@ public class DeepSeekService {
                 notas.add(ie.getNota());
             }
         }
+        if (notas.isEmpty()) {
+            return Map.of(
+                    "mensaje", "El alumno no tiene notas registradas en el sistema, por lo que no posee promedio.",
+                    "promedio", 0,
+                    "cantidadDeNotas", 0
+            );
+        }
         double promedio = notas.stream().mapToInt(Integer::intValue).average().orElse(0);
         Map<String, Object> resultado = new LinkedHashMap<>();
         resultado.put("promedio", Math.round(promedio * 100.0) / 100.0);
@@ -307,7 +332,7 @@ public class DeepSeekService {
         return resultado;
     }
 
-    private List<Map<String, Object>> getMisDocentes(Usuario usuario) {
+    private Object getMisDocentes(Usuario usuario) {
         Map<Long, Map<String, Object>> docentes = new LinkedHashMap<>();
         for (Inscripcion inscripcion : inscripcionRepository.findByAlumnoId(usuario.getId())) {
             if (!inscripcion.getActivo()) {
@@ -322,6 +347,9 @@ public class DeepSeekService {
                     "email", profesor.getEmail() == null ? "" : profesor.getEmail(),
                     "legajo", profesor.getLegajo() == null ? "" : profesor.getLegajo()
             ));
+        }
+        if (docentes.isEmpty()) {
+            return Map.of("mensaje", "El alumno no tiene docentes asignados ya que no se encuentra inscripto en ningun curso activo.");
         }
         return new ArrayList<>(docentes.values());
     }
