@@ -1,5 +1,4 @@
 package com.ips.gestion_academica.dto.inscripcion;
-import jakarta.validation.constraints.NotNull;
 
 public class InscripcionRequest {
 
